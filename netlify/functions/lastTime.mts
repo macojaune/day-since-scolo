@@ -9,5 +9,5 @@ const db = drizzle(client);
 
 export default async (req: Request, context: Context) => {
   const result = await db.select().from(scoloData).all()
-  return new Response(result?.[0].lastTime)
+  return new Response(result?.[0]?.lastTime ?? new Date().toISOString())
 }
