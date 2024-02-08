@@ -7,7 +7,7 @@ function App() {
 	const {data,error,status} = useQuery({
 		queryKey: ['lastTime'],
 		queryFn: () =>
-		  fetch(import.meta.env.VITE_API_URL + '/lastTime').then((res) => res.text() ),
+		  fetch(import.meta.env.VITE_API_URL + '/lastTime').then((res) => res.json() ),
 	})
 	console.log(data, error,status)
 
