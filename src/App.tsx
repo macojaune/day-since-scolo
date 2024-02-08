@@ -5,11 +5,10 @@ import axios from "axios";
 
 function App() {
 	const [duration, setDuration] = useState(0)
-	const {data,error,status} = useQuery({
+	const {data} = useQuery({
 		queryKey: ['lastTime'],
 		queryFn: async () => axios.get(import.meta.env.VITE_API_URL + '/lastTime').then((res) => res.data ),
 	})
-	console.log(data, error,status)
 
 	useEffect(() => {
 
@@ -22,7 +21,7 @@ function App() {
 
 		return () => clearInterval(interval);
 
-	}, [])
+	}, [data])
 
 	const seconds = Math.floor(duration / 1000);
 	const minutes = Math.floor(seconds / 60);
