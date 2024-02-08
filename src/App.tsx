@@ -3,20 +3,21 @@ import {useEffect, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 
 function App() {
-
-	// const lastTime = new Date("2/8/2024 1:23:00 AM")
 	const [duration, setDuration] = useState(0)
-	const {  data } = useQuery({
-queryKey: ['lastTime'],
-queryFn: () =>
-fetch(import.meta.env.VITE_API_URL + '/lastTime')
-.then((res) => res.json()),
-})
+	const {data,error,status} = useQuery({
+		queryKey: ['lastTime'],
+		queryFn: () =>
+		  fetch(import.meta.env.VITE_API_URL + '/lastTime').then((res) => res.text() ),
+	})
+	console.log(data, error,status)
+
 	useEffect(() => {
+
 		const interval = setInterval(() => {
 			const now = new Date()
+			const since = new Date(data?.lastTime)
 			// @ts-expect-error dates
-			setDuration(now - data.lastTime)
+			setDuration(now - since)
 		}, 100);
 
 		return () => clearInterval(interval);
@@ -36,8 +37,8 @@ fetch(import.meta.env.VITE_API_URL + '/lastTime')
 					<br/>
 					<small className="text-sm italic">"Jours sans scolopendre"</small>
 				</h1>
-				<div className={`grid ${days > 0||true ? 'grid-cols-4' : 'grid-cols-3'} gap-x-3 w-full sm:w-1/2`}>
-					{days > 0 ||true?
+				<div className={`grid ${days > 0 ? 'grid-cols-4' : 'grid-cols-3'} gap-x-3 w-full sm:w-1/2`}>
+					{days > 0 ?
 					  <p
 						className="flex flex-col justify-center text-center bg-white p-4 aspect-square rounded-md text-4xl sm:text-7xl text-black ">
 						  {days.toString().padStart(2, '0')} <br/>
@@ -67,14 +68,17 @@ fetch(import.meta.env.VITE_API_URL + '/lastTime')
 			<div className="flex flex-col">
 				<img src={digrainImg} alt="digrain"/>
 				<span className="text-white text-center">Le sauveur</span>
-				<span className="text-lg text-yellow-400 text-center">Pas <i className="italic font-bold text-xl">(encore)</i> sponsorisé.</span>
+				<span className="text-lg text-yellow-400 text-center">Pas <i
+				  className="italic font-bold text-xl">(encore)</i> sponsorisé.</span>
 			</div>
 		</div>
-		<p className="text-white font-light text-center mt-6">Du coup, si vous avez une maison, <i className="text-orange-500 font-bold">garantie SANS
+		<p className="text-white font-light text-center mt-6">Du coup, si vous avez une maison, <i
+		  className="text-orange-500 font-bold">garantie SANS
 			scolo</i>,
 			pour moi… <a className="text-yellow-400 font-bold hover:underline" href="https://t.me/macojaune">je
 				prends</a> !</p>
-		<p className="text-white text-center text-sm mt-12">Site créé <u className="underline italic font-bold">dans la frustration</u> par <a href="https://marvinl.com">MarvinL.com</a></p>
+		<p className="text-white text-center text-sm mt-12">Site créé <u className="underline italic font-bold">dans la
+			frustration</u> par <a href="https://marvinl.com">MarvinL.com</a></p>
 	</div>
 
 }
