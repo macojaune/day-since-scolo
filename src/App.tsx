@@ -1,13 +1,13 @@
 import digrainImg from '/digrain.png'
 import {useEffect, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
+import axios from "axios";
 
 function App() {
 	const [duration, setDuration] = useState(0)
 	const {data,error,status} = useQuery({
 		queryKey: ['lastTime'],
-		queryFn: () =>
-		  fetch(import.meta.env.VITE_API_URL + '/lastTime').then((res) => res.text() ),
+		queryFn: async () => axios.get(import.meta.env.VITE_API_URL + '/lastTime').then((res) => res.data ),
 	})
 	console.log(data, error,status)
 
