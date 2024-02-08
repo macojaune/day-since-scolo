@@ -4,18 +4,19 @@ import {useQuery} from "@tanstack/react-query";
 
 function App() {
 
-	const lastTime = new Date("2/8/2024 1:23:00 AM")
+	// const lastTime = new Date("2/8/2024 1:23:00 AM")
 	const [duration, setDuration] = useState(0)
-	const { isPending, error, data, isFetching } = useQuery({
+	const {  data } = useQuery({
 queryKey: ['lastTime'],
 queryFn: () =>
-fetch('https://api.github.com/repos/tannerlinsley/react-query')
+fetch(import.meta.env.VITE_API_URL + '/lastTime')
 .then((res) => res.json()),
 })
 	useEffect(() => {
 		const interval = setInterval(() => {
 			const now = new Date()
-			setDuration(now - lastTime)
+			// @ts-expect-error dates
+			setDuration(now - data.lastTime)
 		}, 100);
 
 		return () => clearInterval(interval);
