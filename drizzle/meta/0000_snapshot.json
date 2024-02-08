@@ -1,0 +1,30 @@
+{
+  "version": "5",
+  "dialect": "sqlite",
+  "id": "327a40d4-b9ee-4606-a171-c2700d22e32c",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "scolo-data": {
+      "name": "scolo-data",
+      "columns": {
+        "last_time": {
+          "name": "last_time",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}
