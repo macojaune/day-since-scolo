@@ -7,7 +7,7 @@ function App() {
 	const {data,error,status} = useQuery({
 		queryKey: ['lastTime'],
 		queryFn: () =>
-		  fetch(import.meta.env.VITE_API_URL + '/lastTime').then((res) => res.json() ),
+		  fetch(import.meta.env.VITE_API_URL + '/lastTime').then((res) => res.text() ),
 	})
 	console.log(data, error,status)
 
@@ -15,7 +15,7 @@ function App() {
 
 		const interval = setInterval(() => {
 			const now = new Date()
-			const since = new Date(data?.lastTime)
+			const since = new Date(data)
 			// @ts-expect-error dates
 			setDuration(now - since)
 		}, 100);
