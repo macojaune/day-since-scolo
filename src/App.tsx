@@ -1,19 +1,20 @@
-import digrainImg from '/digrain.png'
+import capesImg from '/capes.png'
 import {useEffect, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import axios from "axios";
 
-const Table = ({data}:{data:{id:number,createdAt:string}[]}) => <table>
+const Table = ({data}: { data: { id: number, createdAt: string, tool?: string }[] }) => <table className="table-fixed">
 	<thead>
 	<tr>
 		<th className="text-amber-500">Dernières rencontres</th>
+		<th className="text-amber-500">Arme</th>
 	</tr>
 	</thead>
 	<tbody>
-	{data.map((item: { createdAt: string; }, index: number) => {
+	{data.map((item, index: number) => {
 		if (index === 0) return null
 		const date = new Date(item.createdAt)
-		return <tr>
+		return <tr className="">
 			<td className="text-white">Le {date.toLocaleString('fr-Fr', {
 				day: "2-digit",
 				month: "long",
@@ -22,6 +23,7 @@ const Table = ({data}:{data:{id:number,createdAt:string}[]}) => <table>
 				minute: 'numeric',
 				hourCycle: "h24",
 			})}</td>
+			<td className="text-amber-300/50">{item?.tool ?? 'Digrain'}</td>
 		</tr>
 	})}
 	</tbody>
@@ -54,7 +56,7 @@ function App() {
 
 
 	return <div className="py-8 px-4 sm:p-8 bg-black h-full w-full">
-		<div className={`flex flex-col sm:flex-row gap-5 w-full items-center`}>
+		<div className={`flex flex-col sm:flex-row sm:justify-evenly gap-5 w-full items-center`}>
 			<div className="w-full sm:w-3/5 flex flex-col gap-y-8 items-center justify-center">
 				<h1 className="text-4xl leading-5 sm:leading-6 sm:text-8xl text-yellow-400 font-bold text-center ">
 					Jou san bèt a mil pat
@@ -91,10 +93,9 @@ function App() {
 				{data ? <Table data={data}/> : null}
 			</div>
 			<div className="flex flex-col">
-				<img src={digrainImg} alt="digrain"/>
-				<span className="text-white text-center">Le sauveur</span>
-				<span className="text-lg text-yellow-400 text-center">Pas <i
-				  className="italic font-bold text-xl">(encore)</i> sponsorisé.</span>
+				<img src={capesImg} alt="Bouteille d'eau Capès" className="object-contain object-center"/>
+				<span className="text-white text-center sm:mt-2">L'arme du jour</span>
+				<span className="text-lg text-yellow-400 text-center">On fait avec ce qu'on à…</span>
 			</div>
 		</div>
 		<p className="text-white font-light text-center mt-6">Du coup, si vous avez une maison, <i
