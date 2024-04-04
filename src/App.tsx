@@ -5,17 +5,17 @@ import axios from "axios";
 
 const Table = ({data}: { data: { id: number, createdAt: string, tool?: string }[] }) => <table className="table-fixed">
 	<thead>
-	<tr>
-		<th className="text-amber-500">Dernières rencontres</th>
-		<th className="text-amber-500">Arme</th>
+	<tr className="border-b border-amber-100/70">
+		<th className="text-amber-500 pr-4 border-r border-amber-100/25">Dernières rencontres</th>
+		<th className="text-amber-500 pl-4">Arme</th>
 	</tr>
 	</thead>
 	<tbody>
 	{data.map((item, index: number) => {
 		if (index === 0) return null
 		const date = new Date(item.createdAt)
-		return <tr className="">
-			<td className="text-white">Le {date.toLocaleString('fr-Fr', {
+		return <tr className="border-b border-amber-100/25">
+			<td className="text-white border-r pr-4 border-amber-100/25">Le {date.toLocaleString('fr-Fr', {
 				day: "2-digit",
 				month: "long",
 				year: "numeric",
@@ -23,7 +23,7 @@ const Table = ({data}: { data: { id: number, createdAt: string, tool?: string }[
 				minute: 'numeric',
 				hourCycle: "h24",
 			})}</td>
-			<td className="text-amber-300/50">{item?.tool ?? 'Digrain'}</td>
+			<td className="text-amber-300 pl-4">{item?.tool ?? 'Digrain'}</td>
 		</tr>
 	})}
 	</tbody>
