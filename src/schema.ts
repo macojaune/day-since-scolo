@@ -1,6 +1,6 @@
-import { text, sqliteTable } from "drizzle-orm/sqlite-core";
+import {text, sqliteTable, integer} from "drizzle-orm/sqlite-core";
 
 export const scoloData = sqliteTable('scolo-data', {
-  label: text('label').primaryKey(),
-  lastTime: text('last_time'),
+  id: integer('id').primaryKey({autoIncrement: true}),
+  createdAt: integer('created_at',{mode:'timestamp'}),
 });

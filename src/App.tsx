@@ -3,18 +3,42 @@ import {useEffect, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import axios from "axios";
 
+const Table = ({data}) => <table>
+	<thead>
+	<tr>
+		<th className="text-amber-500">Dernières rencontres</th>
+	</tr>
+	</thead>
+	<tbody>
+	{data.map((item: { createdAt: string; }, index: number) => {
+		if (index === 0) return null
+		const date = new Date(item.createdAt)
+		return <tr>
+			<td className="text-white">Le {date.toLocaleString('fr-Fr', {
+				day: "2-digit",
+				month: "long",
+				year: "numeric",
+				hour: "numeric",
+				minute: 'numeric',
+				hourCycle: "h24",
+			})}</td>
+		</tr>
+	})}
+	</tbody>
+</table>
+
 function App() {
 	const [duration, setDuration] = useState(0)
 	const {data} = useQuery({
-		queryKey: ['lastTime'],
-		queryFn: async () => axios.get(import.meta.env.VITE_API_URL + '/lastTime').then((res) => res.data ),
+		queryKey: ['encounters'],
+		queryFn: async () => axios.get(import.meta.env.VITE_API_URL + '/lastTime').then((res) => res.data),
 	})
 
 	useEffect(() => {
 
 		const interval = setInterval(() => {
 			const now = new Date()
-			const since = new Date(data)
+			const since = new Date(data[0].createdAt)
 			// @ts-expect-error dates
 			setDuration(now - since)
 		}, 100);
@@ -27,6 +51,7 @@ function App() {
 	const minutes = Math.floor(seconds / 60);
 	const hours = Math.floor(minutes / 60);
 	const days = Math.floor(hours / 24)
+
 
 	return <div className="py-8 px-4 sm:p-8 bg-black h-full w-full">
 		<div className={`flex flex-col sm:flex-row gap-5 w-full items-center`}>
@@ -63,6 +88,7 @@ function App() {
 						<small className="text-base sm:text-lg text-center">sec</small>
 					</p>
 				</div>
+				{data ? <Table data={data}/> : null}
 			</div>
 			<div className="flex flex-col">
 				<img src={digrainImg} alt="digrain"/>
