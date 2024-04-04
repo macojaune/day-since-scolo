@@ -3,7 +3,7 @@ import {useEffect, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import axios from "axios";
 
-const Table = ({data}:{data:{id:number,createdAt:string}}) => <table>
+const Table = ({data}:{data:{id:number,createdAt:string}[]}) => <table>
 	<thead>
 	<tr>
 		<th className="text-amber-500">Dernières rencontres</th>
