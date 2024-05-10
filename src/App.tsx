@@ -1,4 +1,4 @@
-import toolImg from "/coutelas.png";
+import toolImg from "/digrain.png";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -26,6 +26,7 @@ const Table = ({
             <td className="text-white border-r pr-4 border-amber-100/25">
               Le{" "}
               {date.toLocaleString("fr-Fr", {
+                timeZone:"America/New_York",
                 day: "2-digit",
                 month: "long",
                 year: "numeric",
@@ -111,8 +112,8 @@ function App() {
         </div>
         <div className="flex flex-col">
           <img
-            src={toolImg}
-            alt="Bouteille d'eau Capès"
+            src={data?.tool ? import(`../public/${data.tool}.png`) :toolImg}
+            alt={data?.tool ?? "Digrain"}
             className="object-contain object-center"
           />
           <span className="text-white text-center sm:mt-2">L'arme du jour</span>
