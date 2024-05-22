@@ -26,7 +26,7 @@ const Table = ({
             <td className="text-white border-r pr-4 border-amber-100/25">
               Le{" "}
               {date.toLocaleString("fr-Fr", {
-                timeZone:"America/New_York",
+                timeZone: "America/New_York",
                 day: "2-digit",
                 month: "long",
                 year: "numeric",
@@ -68,7 +68,9 @@ function App() {
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
-
+  const img = async () => {
+    return data?.tool ? await import(`../public/${data.tool}.png`) : toolImg;
+  };
   return (
     <div className="py-8 px-4 sm:p-8 bg-black h-full w-full">
       <div
@@ -112,7 +114,8 @@ function App() {
         </div>
         <div className="flex flex-col">
           <img
-            src={data?.tool ? import(`../public/${data.tool}.png`) :toolImg}
+            // @ts-expect-error promise as dynamic import
+            src={img()}
             alt={data?.tool ?? "Digrain"}
             className="object-contain object-center"
           />
