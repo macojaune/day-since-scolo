@@ -137,7 +137,9 @@ function App() {
       <p className="text-white text-center text-sm mt-12">
         Site créé{" "}
         <u className="underline italic font-bold">dans la frustration</u> par{" "}
-        <a href="https://marvinl.com">MarvinL.com</a>
+        <a href="https://marvinl.com" className="font-bold hover:underline">
+          MarvinL.com
+        </a>
       </p>
     </div>
   );
