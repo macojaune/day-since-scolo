@@ -68,9 +68,7 @@ function App() {
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
-  const img = async () => {
-    return data?.tool ? await import(`../public/${data.tool}.png`) : toolImg;
-  };
+
   return (
     <div className="py-8 px-4 sm:p-8 bg-black h-full w-full">
       <div
@@ -115,7 +113,7 @@ function App() {
         <div className="flex flex-col">
           <img
             // @ts-expect-error promise as dynamic import
-            src={img()}
+            src={data?.tool ? import(`../public/${data.tool}.png`) : toolImg}
             alt={data?.tool ?? "Digrain"}
             className="object-contain object-center"
           />
