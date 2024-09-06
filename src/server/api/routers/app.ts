@@ -17,16 +17,16 @@ export const appRouter = createTRPCRouter({
 				.limit(1);
 		  }),
 		bet: protectedProcedure
-		  .input(z.object({name: z.string().min(1)}))
+		  .input(z.object({date: z.date(), ecounterId: z.number()}))
 		  .mutation(async ({ctx, input}) => {
-			  const userId = input.userId;
+			  const userId = ctx.session.user.id;
 			  const date = new Date(input.date);
-			  const spawnId = parseInt(input.spawnId);
+			  const encounterId = parseInt(input.encounterId);
 			  const oldCredit = parseInt(input.credits);
 			  try {
 				  const result = await ctx.db
 					.insert(bets)
-					.values({estimationDate: date, createdAt: new Date(), userId, spawnId})
+					.values({estimationDate: date, createdAt: new Date(), userId, encounterId})
 					.returning({id: bets.id})
 				  await ctx.db.insert(credits).values({
 					  userId,

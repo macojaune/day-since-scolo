@@ -5,7 +5,7 @@ import {
   integer,
   primaryKey,
   sqliteTable,
-  text,
+  text, 
 } from 'drizzle-orm/sqlite-core'
 import { type AdapterAccount } from 'next-auth/adapters'
 
@@ -93,12 +93,36 @@ export const verificationTokens = sqliteTable(
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
   })
 )
+export const authenticators = sqliteTable(
+  'authenticator',
+  {
+    credentialID: text('credentialID').notNull().unique(),
+    userId: text('userId')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    providerAccountId: text('providerAccountId').notNull(),
+    credentialPublicKey: text('credentialPublicKey').notNull(),
+    counter: integer('counter').notNull(),
+    credentialDeviceType: text('credentialDeviceType').notNull(),
+    credentialBackedUp: integer('credentialBackedUp', {
+      mode: 'boolean',
+    }).notNull(),
+    transports: text('transports'),
+  },
+  (authenticator) => ({
+    compositePK: primaryKey({
+      columns: [authenticator.userId, authenticator.credentialID],
+    }),
+  })
+)
+
 // todo replace and standardize
 export const scoloData = sqliteTable('scolo-data', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   createdAt: integer('created_at', { mode: 'timestamp' }),
   tool: text('tool'),
 })
+export type Encounter = typeof scoloData.$inferSelect
 
 export const bets = sqliteTable('bets', {
   id: integer('id').primaryKey({ autoIncrement: true }),

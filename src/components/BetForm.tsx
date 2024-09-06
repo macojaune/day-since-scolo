@@ -1,65 +1,46 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState } from "react";
-// import {
-//   SignInButton,
-//   SignOutButton,
-//   SignedIn,
-//   SignedOut,
-//   useUser,
-// } from "@clerk/clerk-react";
+import { signIn, useSession } from 'next-auth/react'
+import { useState } from 'react'
+import type { Encounter } from '~/server/db/schema'
+import { api } from '~/utils/api'
 
-const BetForm = ({ spawn }) => {
-  // const { isLoaded, user } = useUser();
-  const totalCredits = 3; //todo fetch userCredits
-  const [date, setDate] = useState(new Date());
-  const [success, setSuccess] = useState<null | boolean>(null);
-  const { data } = useQuery({
-    queryKey: ["totalCredits"],
-    // queryFn: async () =>
-    //   axios
-    //     .get(import.meta.env.VITE_API_URL + "/credits/" + user?.id)
-    //     .then((res) => res.data),
-  });
+const BetForm = ({ encounter }: { encounter: Encounter }) => {
+  const { data: session } = useSession()
+  const totalCredits = 3 //todo fetch userCredits
+  const [date, setDate] = useState(new Date())
+  const [success, setSuccess] = useState<boolean | null>(null)
+  const { data: credits } = api.credits.useQuery(
+    { id: session?.user.id },
+    { enabled: !!session?.user.id }
+  )
 
-  const { mutateAsync, isPending } = useMutation({
-    mutationKey: ["bet"],
-    // mutationFn: async () =>
-    //   axios
-    //     .post(import.meta.env.VITE_API_URL + "/bet", {
-    //       userId: user?.id,
-    //       date,
-    //       credits: totalCredits,
-    //       spawnId: spawn.id,
-    //     })
-    //     .then((res) => res.data),
-    onSuccess(data, variables, context) {
-      setSuccess(true);
+  const { mutate, isPending } = api.bet.useMutation({
+    onSuccess: (data, variables, context) => {
+      setSuccess(true)
     },
-  });
-
-  if (!isLoaded) return null;
+  })
 
   const handleBet = async () => {
-    await mutateAsync();
-  };
+    try {
+      await mutate({ date, encounterId: encounter.id })
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   return (
-    <div className="bg-yellow-400 p-4 rounded-md flex flex-col">
-      <h2 className="text-3xl text-start">Parie sur la prochaine rencontre</h2>
-      <SignedOut>
-        <SignInButton mode="modal">
-          <button>Se connecter</button>
-        </SignInButton>
-      </SignedOut>
-      <SignedIn>
-        <div className="flex flex-col items-center gap-3 justify-between">
-          <div className=" flex flex-row gap-2 items-baseline w-full">
-            <span>Connecté·e en tant que @{user?.username}</span>
-            <SignOutButton>
-              <button className="text-sm text-red-800 hover:font-bold">
-                Déconnexion
-              </button>
-            </SignOutButton>
+    <div className="flex flex-col rounded-md bg-yellow-400 p-4">
+      <h2 className="text-start text-3xl mb-4">"Parie" sur la prochaine rencontre</h2>
+      {!session ? (
+        <button onClick={() => signIn()} className='w-fit self-center rounded-md bg-black px-8 py-4 text-white hover:bg-gray-800'>Se connecter</button>
+      ) : (
+        <div className="flex flex-col items-center justify-between gap-3">
+          <div className="flex w-full flex-row items-baseline gap-2">
+            {/* <span>Connecté·e en tant que @{user?.username}</span> */}
+            {/* <SignOutButton> */}
+            <button className="text-sm text-red-800 hover:font-bold">
+              Déconnexion
+            </button>
+            {/* </SignOutButton> */}
           </div>
           <div>
             <p>Choisis une date</p>
@@ -72,27 +53,27 @@ const BetForm = ({ spawn }) => {
               required
             />
           </div>
-          <div className="flex flex-col px-4 items-center">
+          <div className="flex flex-col items-center px-4">
             <span className="text-sm italic">
               {totalCredits} crédits disponibles
             </span>
             <button
               onClick={handleBet}
-              className="bg-black hover:bg-gray-800 px-8 py-4 rounded-md text-white w-fit"
+              className="w-fit rounded-md bg-black px-8 py-4 text-white hover:bg-gray-800"
             >
               {isPending ? (
-                "Patientons…"
+                'Patientons…'
               ) : (
                 <>
-                  <b className="font-semibold">Miser</b>{" "}
+                  <b className="font-semibold">Miser</b>{' '}
                   <i className="italic">(3 crédits)</i>
                 </>
               )}
             </button>
           </div>
         </div>
-      </SignedIn>
+      )}
     </div>
-  );
-};
-export default BetForm;
+  )
+}
+export default BetForm

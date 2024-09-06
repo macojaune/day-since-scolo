@@ -7,7 +7,7 @@ settings:
 dependencies:
   '@auth/drizzle-adapter':
     specifier: ^1.1.0
-    version: 1.4.2
+    version: 1.4.2(nodemailer@6.9.15)
   '@libsql/client':
     specifier: ^0.6.2
     version: 0.6.2
@@ -15,17 +15,17 @@ dependencies:
     specifier: ^0.10.1
     version: 0.10.1(typescript@5.5.4)(zod@3.23.8)
   '@tanstack/react-query':
-    specifier: ^5.50.0
-    version: 5.51.21(react@18.3.1)
+    specifier: ^5.55.0
+    version: 5.55.0(react@18.3.1)
   '@trpc/client':
     specifier: ^11.0.0-rc.446
     version: 11.0.0-rc.477(@trpc/server@11.0.0-rc.477)
   '@trpc/next':
     specifier: ^11.0.0-rc.446
-    version: 11.0.0-rc.477(@tanstack/react-query@5.51.21)(@trpc/client@11.0.0-rc.477)(@trpc/react-query@11.0.0-rc.477)(@trpc/server@11.0.0-rc.477)(next@14.2.5)(react-dom@18.3.1)(react@18.3.1)
+    version: 11.0.0-rc.477(@tanstack/react-query@5.55.0)(@trpc/client@11.0.0-rc.477)(@trpc/react-query@11.0.0-rc.477)(@trpc/server@11.0.0-rc.477)(next@14.2.5)(react-dom@18.3.1)(react@18.3.1)
   '@trpc/react-query':
     specifier: ^11.0.0-rc.446
-    version: 11.0.0-rc.477(@tanstack/react-query@5.51.21)(@trpc/client@11.0.0-rc.477)(@trpc/server@11.0.0-rc.477)(react-dom@18.3.1)(react@18.3.1)
+    version: 11.0.0-rc.477(@tanstack/react-query@5.55.0)(@trpc/client@11.0.0-rc.477)(@trpc/server@11.0.0-rc.477)(react-dom@18.3.1)(react@18.3.1)
   '@trpc/server':
     specifier: ^11.0.0-rc.446
     version: 11.0.0-rc.477
@@ -40,7 +40,10 @@ dependencies:
     version: 14.2.5(react-dom@18.3.1)(react@18.3.1)
   next-auth:
     specifier: ^4.24.7
-    version: 4.24.7(next@14.2.5)(react-dom@18.3.1)(react@18.3.1)
+    version: 4.24.7(next@14.2.5)(nodemailer@6.9.15)(react-dom@18.3.1)(react@18.3.1)
+  nodemailer:
+    specifier: ^6.9.15
+    version: 6.9.15
   react:
     specifier: ^18.3.1
     version: 18.3.1
@@ -116,7 +119,7 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /@auth/core@0.34.2:
+  /@auth/core@0.34.2(nodemailer@6.9.15):
     resolution: {integrity: sha512-KywHKRgLiF3l7PLyL73fjLSIBe1YNcA6sMeew4yMP6cfCWGXZrkkXd32AjRi1hlJ9nvovUBGZHvbn+LijO6ZeQ==}
     peerDependencies:
       '@simplewebauthn/browser': ^9.0.1
@@ -134,15 +137,16 @@ packages:
       '@types/cookie': 0.6.0
       cookie: 0.6.0
       jose: 5.6.3
+      nodemailer: 6.9.15
       oauth4webapi: 2.11.1
       preact: 10.11.3
       preact-render-to-string: 5.2.3(preact@10.11.3)
     dev: false
 
-  /@auth/drizzle-adapter@1.4.2:
+  /@auth/drizzle-adapter@1.4.2(nodemailer@6.9.15):
     resolution: {integrity: sha512-rqukaT9CeWB8VOt6g2bQ6uYMHVOQIYCBkzddZXWshi8aqwLABatpRWAc+pehpcMDn0RSW/uvKMs7tkON+Bho9Q==}
     dependencies:
-      '@auth/core': 0.34.2
+      '@auth/core': 0.34.2(nodemailer@6.9.15)
     transitivePeerDependencies:
       - '@simplewebauthn/browser'
       - '@simplewebauthn/server'
@@ -946,16 +950,16 @@ packages:
       zod: 3.23.8
     dev: false
 
-  /@tanstack/query-core@5.51.21:
-    resolution: {integrity: sha512-POQxm42IUp6n89kKWF4IZi18v3fxQWFRolvBA6phNVmA8psdfB1MvDnGacCJdS+EOX12w/CyHM62z//rHmYmvw==}
+  /@tanstack/query-core@5.54.1:
+    resolution: {integrity: sha512-hKS+WRpT5zBFip21pB6Jx1C0hranWQrbv5EJ7qPoiV5MYI3C8rTCqWC9DdBseiPT1JgQWh8Y55YthuYZNiw3Xw==}
     dev: false
 
-  /@tanstack/react-query@5.51.21(react@18.3.1):
-    resolution: {integrity: sha512-Q/V81x3sAYgCsxjwOkfLXfrmoG+FmDhLeHH5okC/Bp8Aaw2c33lbEo/mMcMnkxUPVtB2FLpzHT0tq3c+OlZEbw==}
+  /@tanstack/react-query@5.55.0(react@18.3.1):
+    resolution: {integrity: sha512-2uYuxEbRQD8TORUiTUacEOwt1e8aoSqUOJFGY5TUrh6rQ3U85zrMS2wvbNhBhXGh6Vj69QDCP2yv8tIY7joo6Q==}
     peerDependencies:
-      react: ^18.0.0
+      react: ^18 || ^19
     dependencies:
-      '@tanstack/query-core': 5.51.21
+      '@tanstack/query-core': 5.54.1
       react: 18.3.1
     dev: false
 
@@ -967,7 +971,7 @@ packages:
       '@trpc/server': 11.0.0-rc.477
     dev: false
 
-  /@trpc/next@11.0.0-rc.477(@tanstack/react-query@5.51.21)(@trpc/client@11.0.0-rc.477)(@trpc/react-query@11.0.0-rc.477)(@trpc/server@11.0.0-rc.477)(next@14.2.5)(react-dom@18.3.1)(react@18.3.1):
+  /@trpc/next@11.0.0-rc.477(@tanstack/react-query@5.55.0)(@trpc/client@11.0.0-rc.477)(@trpc/react-query@11.0.0-rc.477)(@trpc/server@11.0.0-rc.477)(next@14.2.5)(react-dom@18.3.1)(react@18.3.1):
     resolution: {integrity: sha512-cijR4i0nvt9izzZkGoKtHj8CfIquuH1I/QN3c1/9eNi9VZvB6KPlCYuxpgctZBPTlzbpgagh0SmKC634tXnl/Q==}
     peerDependencies:
       '@tanstack/react-query': ^5.49.2
@@ -983,16 +987,16 @@ packages:
       '@trpc/react-query':
         optional: true
     dependencies:
-      '@tanstack/react-query': 5.51.21(react@18.3.1)
+      '@tanstack/react-query': 5.55.0(react@18.3.1)
       '@trpc/client': 11.0.0-rc.477(@trpc/server@11.0.0-rc.477)
-      '@trpc/react-query': 11.0.0-rc.477(@tanstack/react-query@5.51.21)(@trpc/client@11.0.0-rc.477)(@trpc/server@11.0.0-rc.477)(react-dom@18.3.1)(react@18.3.1)
+      '@trpc/react-query': 11.0.0-rc.477(@tanstack/react-query@5.55.0)(@trpc/client@11.0.0-rc.477)(@trpc/server@11.0.0-rc.477)(react-dom@18.3.1)(react@18.3.1)
       '@trpc/server': 11.0.0-rc.477
       next: 14.2.5(react-dom@18.3.1)(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
     dev: false
 
-  /@trpc/react-query@11.0.0-rc.477(@tanstack/react-query@5.51.21)(@trpc/client@11.0.0-rc.477)(@trpc/server@11.0.0-rc.477)(react-dom@18.3.1)(react@18.3.1):
+  /@trpc/react-query@11.0.0-rc.477(@tanstack/react-query@5.55.0)(@trpc/client@11.0.0-rc.477)(@trpc/server@11.0.0-rc.477)(react-dom@18.3.1)(react@18.3.1):
     resolution: {integrity: sha512-1ZCAm0wv7yLmb3muq+5DTRxdKXzI1KjTrcM2+QRKCFu6EherGM8x6zGI36P9ZmC6o+SCoedzxqazDNe+kkqVqA==}
     peerDependencies:
       '@tanstack/react-query': ^5.49.2
@@ -1001,7 +1005,7 @@ packages:
       react: '>=18.2.0'
       react-dom: '>=18.2.0'
     dependencies:
-      '@tanstack/react-query': 5.51.21(react@18.3.1)
+      '@tanstack/react-query': 5.55.0(react@18.3.1)
       '@trpc/client': 11.0.0-rc.477(@trpc/server@11.0.0-rc.477)
       '@trpc/server': 11.0.0-rc.477
       react: 18.3.1
@@ -3267,7 +3271,7 @@ packages:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
     dev: true
 
-  /next-auth@4.24.7(next@14.2.5)(react-dom@18.3.1)(react@18.3.1):
+  /next-auth@4.24.7(next@14.2.5)(nodemailer@6.9.15)(react-dom@18.3.1)(react@18.3.1):
     resolution: {integrity: sha512-iChjE8ov/1K/z98gdKbn2Jw+2vLgJtVV39X+rCP5SGnVQuco7QOr19FRNGMIrD8d3LYhHWV9j9sKLzq1aDWWQQ==}
     peerDependencies:
       next: ^12.2.5 || ^13 || ^14
@@ -3283,6 +3287,7 @@ packages:
       cookie: 0.5.0
       jose: 4.15.9
       next: 14.2.5(react-dom@18.3.1)(react@18.3.1)
+      nodemailer: 6.9.15
       oauth: 0.9.15
       openid-client: 5.6.5
       preact: 10.23.1
@@ -3350,6 +3355,11 @@ packages:
       data-uri-to-buffer: 4.0.1
       fetch-blob: 3.2.0
       formdata-polyfill: 4.0.10
+    dev: false
+
+  /nodemailer@6.9.15:
+    resolution: {integrity: sha512-AHf04ySLC6CIfuRtRiEYtGEXgRfa6INgWGluDhnxTZhHSKvrBu7lc1VVchQ0d8nPc4cFaZoPq8vkyNoZr0TpGQ==}
+    engines: {node: '>=6.0.0'}
     dev: false
 
   /normalize-path@3.0.0:
