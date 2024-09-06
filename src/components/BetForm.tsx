@@ -1,38 +1,37 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import axios from "axios";
 import { useState } from "react";
-import {
-  SignInButton,
-  SignOutButton,
-  SignedIn,
-  SignedOut,
-  useUser,
-} from "@clerk/clerk-react";
+// import {
+//   SignInButton,
+//   SignOutButton,
+//   SignedIn,
+//   SignedOut,
+//   useUser,
+// } from "@clerk/clerk-react";
 
 const BetForm = ({ spawn }) => {
-  const { isLoaded, user } = useUser();
+  // const { isLoaded, user } = useUser();
   const totalCredits = 3; //todo fetch userCredits
   const [date, setDate] = useState(new Date());
   const [success, setSuccess] = useState<null | boolean>(null);
   const { data } = useQuery({
     queryKey: ["totalCredits"],
-    queryFn: async () =>
-      axios
-        .get(import.meta.env.VITE_API_URL + "/credits/" + user?.id)
-        .then((res) => res.data),
+    // queryFn: async () =>
+    //   axios
+    //     .get(import.meta.env.VITE_API_URL + "/credits/" + user?.id)
+    //     .then((res) => res.data),
   });
 
   const { mutateAsync, isPending } = useMutation({
     mutationKey: ["bet"],
-    mutationFn: async () =>
-      axios
-        .post(import.meta.env.VITE_API_URL + "/bet", {
-          userId: user?.id,
-          date,
-          credits: totalCredits,
-          spawnId: spawn.id,
-        })
-        .then((res) => res.data),
+    // mutationFn: async () =>
+    //   axios
+    //     .post(import.meta.env.VITE_API_URL + "/bet", {
+    //       userId: user?.id,
+    //       date,
+    //       credits: totalCredits,
+    //       spawnId: spawn.id,
+    //     })
+    //     .then((res) => res.data),
     onSuccess(data, variables, context) {
       setSuccess(true);
     },

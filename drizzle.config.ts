@@ -1,14 +1,12 @@
-import * as dotenv from "dotenv"
-import type { Config } from "drizzle-kit"
+import { type Config } from "drizzle-kit";
 
-dotenv.config()
+import { env } from "~/env";
 
 export default {
-  schema: "./src/schema.ts",
-  out: "./drizzle",
-  driver: 'turso',
-   dbCredentials: {
-      url: process.env.TURSO_URL!,
-     authToken: process.env.TURSO_TOKEN!,
-   }
+  schema: "./src/server/db/schema.ts",
+  dialect: "sqlite",
+  dbCredentials: {
+    url: env.DATABASE_URL,
+  },
+  tablesFilter: ["day-since-page_*"],
 } satisfies Config;
