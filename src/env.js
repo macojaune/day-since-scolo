@@ -24,9 +24,9 @@ export const env = createEnv({
       process.env.VERCEL ? z.string() : z.string().url()
     ),
     TWITTER_API_KEY: z.string(),
-    TWITTER_API_SECRET_KEY: z.string(),
+    TWITTER_API_SECRET: z.string(),
     TWITTER_ACCESS_TOKEN: z.string(),
-    TWITTER_ACCESS_TOKEN_SECRET: z.string(),
+    TWITTER_ACCESS_SECRET: z.string(),
     // DISCORD_CLIENT_ID: z.string(),
     // DISCORD_CLIENT_SECRET: z.string(),
   },
@@ -51,9 +51,9 @@ export const env = createEnv({
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     TWITTER_API_KEY: process.env.TWITTER_API_KEY,
-    TWITTER_API_SECRET_KEY: process.env.TWITTER_API_SECRET_KEY,
+    TWITTER_API_SECRET: process.env.TWITTER_API_SECRET,
     TWITTER_ACCESS_TOKEN: process.env.TWITTER_ACCESS_TOKEN,
-    TWITTER_ACCESS_TOKEN_SECRET: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+    TWITTER_ACCESS_SECRET: process.env.TWITTER_ACCESS_SECRET,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
