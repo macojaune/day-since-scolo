@@ -3,6 +3,7 @@ import {z} from "zod";
 import {createTRPCRouter, protectedProcedure, publicProcedure,} from "~/server/api/trpc";
 import {bets, credits, scoloData} from "~/server/db/schema";
 import {desc, eq} from "drizzle-orm";
+import { sendTweet } from "~/utils/twitter";
 
 export const appRouter = createTRPCRouter({
 		credits: protectedProcedure
@@ -44,20 +45,21 @@ export const appRouter = createTRPCRouter({
 				orderBy: [desc(scoloData.createdAt)],
 			});
 		}),
-		update:
-		  protectedProcedure.input(z.object({tool: z.string().optional(), date: z.date().optional(),})).query(async ({
-			                                                                                                       ctx,
-			                                                                                                       input
-		                                                                                                       }) => {
-			  const tool = input?.tool ?? "digrain";
-			  const date = input?.date
-				? new Date(input.date)
-				: new Date();
-			  await ctx.db.insert(scoloData).values({createdAt: date, tool});
-			  return new Response(
-				"Added : le " + date.toString() + "-> " + date.getTime() + " avec " + tool,
-			  );
+		update: protectedProcedure
+		  .input(z.object({ tool: z.string().optional(), date: z.date().optional() }))
+		  .mutation(async ({ ctx, input }) => {
+		    const tool = input?.tool ?? "digrain";
+		    const date = input?.date ? new Date(input.date) : new Date();
+		    
+		    await ctx.db.insert(scoloData).values({ createdAt: date, tool });
+		    
+		    const tweetMessage = `[Scolo] Nouvelle abomination exterminée. Arme du crime : ${tool}. Parle de moi à ta tatie qui à plein de biens à louer là ! https://scolo.marvinl.com`;
+		    const tweetSent = await sendTweet(tweetMessage);
+
+		    return {
+		      message: `Added: le ${date.toString()} -> ${date.getTime()} avec ${tool}`,
+		      tweetSent
+		    };
 		  }),
-	}
-  )
-;
+		
+	})
