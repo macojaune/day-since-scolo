@@ -1,39 +1,16 @@
 import { useEffect, useState } from 'react'
 import { signIn, signOut, useSession } from 'next-auth/react'
 import Head from 'next/head'
-import Image from 'next/image'
 import BetForm from '~/components/BetForm'
 import SpawnTable from '~/components/SpawnTable'
 import { api } from '~/utils/api'
 
-import toolImg from '/public/digrain.png'
 import type { Encounter } from '~/server/db/schema'
-const imageDetails = {
-  digrain: { width: 500, height: 900 },
-  capes: { width: 207, height: 749 },
-  coutelas: { width: 500, height: 500 },
-  sandale: { width: 1120, height: 1120 },
-}
-const Picture = ({ encounter }: { encounter: Encounter | null }) => {
-  return (
-    <div className="flex flex-col items-center justify-center">
-      <Image
-        src={encounter?.tool ? `/${encounter?.tool}.png` : toolImg}
-        alt={encounter?.tool ?? 'Digrain'}
-        className="object-contain object-center"
-        width={imageDetails[encounter?.tool ?? 'digrain'].width}
-        height={imageDetails[encounter?.tool ?? 'digrain'].height}
-      />
-      <span className="text-center text-white sm:mt-2 text-xl">L'arme du jour</span>
-      <span className="text-center text-base text-yellow-400">
-        On fait avec ce qu'on à…
-      </span>
-    </div>
-  )
-}
+import ToolPicture from '~/components/ToolPicture'
+
 export default function Home() {
   const [duration, setDuration] = useState(0)
-  const { data } = api.app.getLatest.useQuery<Encounter[]>()
+  const { data } = api.app.getLatest.useQuery()
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -110,18 +87,18 @@ export default function Home() {
             </p>
           </div>
           <div className="block sm:hidden">
-            <Picture encounter={data?.[0]} />
+            <ToolPicture encounter={data?.[0]} />
           </div>
           <BetForm encounter={data?.[0]} />
           {data ? <SpawnTable data={data} /> : null}
         </div>
         <div className="hidden w-full flex-col sm:flex sm:w-1/2">
-          <Picture />
+          <ToolPicture />
         </div>
       </div>
       <p className="mt-6 text-center font-light text-white">
         Du coup, si vous avez une maison pour moi,{' '}
-        <i className="font-bold text-orange-500">garantie SANS scolo…</i>{" "}
+        <i className="font-bold text-orange-500">garantie SANS scolo…</i>{' '}
         <a
           className="font-bold text-yellow-400 hover:underline"
           href="https://t.me/macojaune"

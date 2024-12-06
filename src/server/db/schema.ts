@@ -5,7 +5,7 @@ import {
   integer,
   primaryKey,
   sqliteTable,
-  text, 
+  text,
 } from 'drizzle-orm/sqlite-core'
 import { type AdapterAccount } from 'next-auth/adapters'
 
@@ -18,12 +18,10 @@ import { type AdapterAccount } from 'next-auth/adapters'
 // export const createTable = sqliteTableCreator((name) => `${name}`)
 
 export const users = sqliteTable('user', {
-  id: text('id')
-    .notNull()
-    .primaryKey(),
+  id: text('id').notNull().primaryKey(),
   name: text('name', { length: 255 }),
   email: text('email', { length: 255 }).notNull(),
-  emailVerified: int('email_verified', {
+  emailVerified: int('emailVerified', {
     mode: 'timestamp',
   }).default(sql`(unixepoch())`),
   image: text('image', { length: 255 }),
@@ -36,21 +34,21 @@ export const usersRelations = relations(users, ({ many }) => ({
 export const accounts = sqliteTable(
   'account',
   {
-    userId: text('user_id', { length: 255 })
+    userId: text('userId', { length: 255 })
       .notNull()
       .references(() => users.id),
     type: text('type', { length: 255 })
       .$type<AdapterAccount['type']>()
       .notNull(),
     provider: text('provider', { length: 255 }).notNull(),
-    providerAccountId: text('provider_account_id', { length: 255 }).notNull(),
-    refresh_token: text('refresh_token'),
-    access_token: text('access_token'),
-    expires_at: int('expires_at'),
-    token_type: text('token_type', { length: 255 }),
+    providerAccountId: text('providerAccountId', { length: 255 }).notNull(),
+    refresh_token: text('refreshToken'),
+    access_token: text('accessToken'),
+    expires_at: int('expiresAt'),
+    token_type: text('tokenType', { length: 255 }),
     scope: text('scope', { length: 255 }),
-    id_token: text('id_token'),
-    session_state: text('session_state', { length: 255 }),
+    id_token: text('idToken'),
+    session_state: text('sessionState', { length: 255 }),
   },
   (account) => ({
     compoundKey: primaryKey({
@@ -67,7 +65,7 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 export const sessions = sqliteTable(
   'session',
   {
-    sessionToken: text('session_token', { length: 255 }).notNull().primaryKey(),
+    sessionToken: text('sessionToken', { length: 255 }).notNull().primaryKey(),
     userId: text('userId', { length: 255 })
       .notNull()
       .references(() => users.id),
@@ -83,7 +81,7 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
 }))
 
 export const verificationTokens = sqliteTable(
-  'verification_token',
+  'verificationToken',
   {
     identifier: text('identifier', { length: 255 }).notNull(),
     token: text('token', { length: 255 }).notNull(),
