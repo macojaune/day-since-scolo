@@ -1,4 +1,4 @@
-import { createClient, type Client } from "@libsql/client";
+import { createClient, type Client } from "@libsql/client/http";
 import { drizzle } from "drizzle-orm/libsql";
 
 import { env } from "~/env";
@@ -13,6 +13,8 @@ const globalForDb = globalThis as unknown as {
 };
 
 export const client =
+  // The app uses a remote libsql/Turso database, so the HTTP client avoids native bindings that
+  // break Next.js standalone builds on VPS/Docker deployments.
   globalForDb.client ?? createClient({ url: env.DATABASE_URL, authToken: env.DATABASE_AUTH_TOKEN });
 if (env.NODE_ENV !== "production") globalForDb.client = client;
 

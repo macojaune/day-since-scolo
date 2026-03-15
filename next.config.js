@@ -6,7 +6,6 @@ await import("./src/env.js");
 
 /** @type {import("next").NextConfig} */
 const config = {
-  output: "standalone",
   reactStrictMode: true,
   typescript: {
     ignoreBuildErrors: true,
