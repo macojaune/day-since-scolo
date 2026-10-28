@@ -1,21 +1,43 @@
-import { createClient, type Client } from "@libsql/client/http";
-import { drizzle } from "drizzle-orm/libsql";
+import { mkdirSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { createClient, type Client } from '@libsql/client'
+import { assertDatabaseConfiguration, type DatabaseConfiguration } from '../../config.js'
 
-import { env } from "~/env";
-import * as schema from "./schema";
+export type { DatabaseConfiguration } from '../../config.js'
 
-/**
- * Cache the database connection in development. This avoids creating a new connection on every HMR
- * update.
- */
+/** Local scripts cannot open a remote database, even with production variables loaded. */
+export function createLocalDatabaseClient(url = process.env.DATABASE_URL ?? 'file:./.local/scolo.db'): Client {
+  assertDatabaseConfiguration({ SCOLO_WALLET_MODE: 'local', DATABASE_URL: url })
+  mkdirSync(dirname(resolve(url.slice(5))), { recursive: true })
+  return createClient({ url })
+}
+
+export function createDatabaseClient(config: DatabaseConfiguration): Client {
+  assertDatabaseConfiguration(config)
+  return config.SCOLO_WALLET_MODE === 'local'
+    ? createLocalDatabaseClient(config.DATABASE_URL)
+    : createClient({ url: config.DATABASE_URL, authToken: config.DATABASE_AUTH_TOKEN })
+}
+
 const globalForDb = globalThis as unknown as {
-  client: Client | undefined;
-};
+  scoloDatabase?: { config: DatabaseConfiguration; client: Client }
+}
 
-export const client =
-  // The app uses a remote libsql/Turso database, so the HTTP client avoids native bindings that
-  // break Next.js standalone builds on VPS/Docker deployments.
-  globalForDb.client ?? createClient({ url: env.DATABASE_URL, authToken: env.DATABASE_AUTH_TOKEN });
-if (env.NODE_ENV !== "production") globalForDb.client = client;
-
-export const db = drizzle(client, { schema });
+/** Imports and builds perform no database I/O. Runtime requests initialize the client. */
+export function getDatabaseClient(config: DatabaseConfiguration): Client {
+  const cached = globalForDb.scoloDatabase
+  if (cached && !cached.client.closed &&
+    cached.config.SCOLO_WALLET_MODE === config.SCOLO_WALLET_MODE &&
+    cached.config.DATABASE_URL === config.DATABASE_URL &&
+    cached.config.DATABASE_AUTH_TOKEN === config.DATABASE_AUTH_TOKEN) return cached.client
+  const client = createDatabaseClient(config)
+  globalForDb.scoloDatabase = {
+    config: {
+      SCOLO_WALLET_MODE: config.SCOLO_WALLET_MODE,
+      DATABASE_URL: config.DATABASE_URL,
+      DATABASE_AUTH_TOKEN: config.DATABASE_AUTH_TOKEN,
+    },
+    client,
+  }
+  return client
+}

@@ -1,79 +1,63 @@
+import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
+import { clerkClient } from '@clerk/nextjs/server'
+import { adminProcedure, createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc'
+import { GameError, getGameService } from '~/server/game'
+import { publishAppearanceIfEnabled } from '~/server/social/appearance-publication'
 
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from '~/server/api/trpc'
-import { bets, credits, scoloData } from '~/server/db/schema'
-import { desc, eq } from 'drizzle-orm'
-import { sendTweet } from '~/utils/twitter'
+const settlementInput = z.object({
+  roundId: z.string().min(1),
+  observedAt: z.date(),
+  tool: z.enum(['sandale', 'coutelas', 'digrain', 'capes']),
+})
+
+const viewerInput = z.object({ viewerId: z.string().min(1) })
+function assertViewer(actual: string, expected: string) {
+  if (actual !== expected) throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Ta session a changé. Recharge la page pour continuer.' })
+}
+
+async function handleGame<T>(operation: () => Promise<T>): Promise<T> {
+  try { return await operation() }
+  catch (error) {
+    if (error instanceof TRPCError) throw error
+    if (error instanceof GameError) {
+      throw new TRPCError({ code: error.code === 'CONFIGURATION_ERROR' ? 'INTERNAL_SERVER_ERROR' : 'BAD_REQUEST', message: error.message, cause: error })
+    }
+    throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Le jeu ne répond pas. Réessaie dans un instant.', cause: error })
+  }
+}
 
 export const appRouter = createTRPCRouter({
-  credits: protectedProcedure
-    .input(z.object({ id: z.string().optional() }))
-    .query(({ ctx, input: { id } }) => {
-      let userId = id
-      if (!id) userId = ctx.session.user.id
-
-      return ctx.db
-        .select({ credit: credits.newCredit })
-        .from(credits)
-        .where(eq(credits.userId, userId))
-        .orderBy(desc(credits.createdAt))
-        .limit(1)
-    }),
-  bet: protectedProcedure
-    .input(
-      z.object({ date: z.date(), spawnId: z.number(), credits: z.number() })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id
-      const date = new Date(input.date)
-      const spawnId = input.spawnId
-      const oldCredit = input.credits
-
-      try {
-        const result = await ctx.db
-          .insert(bets)
-          .values({
-            estimationDate: date,
-            createdAt: new Date(),
-            userId,
-            spawnId,
-          })
-          .returning({ id: bets.id })
-        await ctx.db.insert(credits).values({
-          userId,
-          oldCredit,
-          newCredit: oldCredit - 3,
-          transactionType: 'bet',
-          transactionId: result?.[0]?.id,
-        })
-        return { credits: oldCredit - 3 }
-      } catch (e) {
-        console.error(e)
-      }
-    }),
-  getLatest: publicProcedure.query(async ({ ctx }) => {
-    return ctx.db.query.scoloData.findMany({
-      orderBy: [desc(scoloData.createdAt)],
-    })
-  }),
-  update: protectedProcedure
-    .input(z.object({ tool: z.string().optional(), date: z.date().optional() }))
-    .mutation(async ({ ctx, input }) => {
-      const tool = input?.tool ?? 'digrain'
-      const date = input?.date ? new Date(input.date) : new Date()
-
-      await ctx.db.insert(scoloData).values({ createdAt: date, tool })
-
-      const tweetMessage = `[Scolo] Nouvelle abomination exterminée. Arme du crime : ${tool}. Parle de moi à ta tatie qui à plein de biens à louer là ! https://scolo.marvinl.com`
-      const tweetSent = await sendTweet(tweetMessage)
-
-      return {
-        message: `Added: le ${date.toString()} -> ${date.getTime()} avec ${tool}`,
-        tweetSent,
-      }
-    }),
+  game: publicProcedure.query(() => handleGame(async () => (await getGameService()).getPublicGame())),
+  join: protectedProcedure.input(viewerInput).mutation(({ ctx, input }) => handleGame(async () => {
+    assertViewer(ctx.userId, input.viewerId)
+    const user = await (await clerkClient()).users.getUser(ctx.userId)
+    return (await getGameService()).ensurePlayer({ userId: ctx.userId, displayName: user.username ?? undefined })
+  })),
+  me: protectedProcedure.input(viewerInput).query(({ ctx, input }) => handleGame(async () => {
+    assertViewer(ctx.userId, input.viewerId)
+    try { return { ...(await (await getGameService()).getPlayerGame(ctx.userId)), isAdmin: ctx.isAdmin, registered: true } }
+    catch (error) {
+      if (error instanceof GameError && error.code === 'PLAYER_NOT_FOUND') return { balance: 0, committed: 0, predictions: [], isAdmin: ctx.isAdmin, registered: false }
+      throw error
+    }
+  })),
+  bet: protectedProcedure.input(z.object({
+    viewerId: z.string().min(1),
+    roundId: z.string().min(1), predictedAt: z.date(),
+    stake: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+    idempotencyKey: z.string().min(8).max(120),
+  })).mutation(({ ctx, input }) => handleGame(async () => {
+    assertViewer(ctx.userId, input.viewerId)
+    return (await getGameService()).placePrediction({ ...input, userId: ctx.userId })
+  })),
+  addHistoricalAppearance: adminProcedure.input(settlementInput.omit({ roundId: true }).extend({
+    idempotencyKey: z.string().min(8).max(128),
+  })).mutation(({ ctx, input }) => handleGame(async () => (await getGameService()).addHistoricalAppearance({ ...input, actorUserId: ctx.userId }))),
+  previewSettlement: adminProcedure.input(settlementInput).mutation(({ input }) => handleGame(async () => (await getGameService()).previewSettlement(input))),
+  settleRound: adminProcedure.input(settlementInput).mutation(({ input }) => handleGame(async () => {
+    const result = await (await getGameService()).settleRound(input)
+    const publication = result.appearanceId ? await publishAppearanceIfEnabled(result.appearanceId) : undefined
+    return { ...result, publication }
+  })),
 })

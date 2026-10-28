@@ -7,7 +7,6 @@ import {
   sqliteTable,
   text,
 } from 'drizzle-orm/sqlite-core'
-import { type AdapterAccount } from 'next-auth/adapters'
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -38,7 +37,7 @@ export const accounts = sqliteTable(
       .notNull()
       .references(() => users.id),
     type: text('type', { length: 255 })
-      .$type<AdapterAccount['type']>()
+      .$type<'oauth' | 'oidc' | 'email' | 'credentials' | 'webauthn'>()
       .notNull(),
     provider: text('provider', { length: 255 }).notNull(),
     providerAccountId: text('providerAccountId', { length: 255 }).notNull(),
@@ -143,3 +142,57 @@ export const credits = sqliteTable('credits', {
 export const betsRelations = relations(bets, ({ one }) => ({
   spawn: one(scoloData, { fields: [bets.spawnId], references: [scoloData.id] }),
 }))
+
+// The historical tables above are preserved during the Clerk transition. New
+// local-game state lives in its own tables and never reuses legacy credits.
+export const scoloPlayers = sqliteTable('scolo_players', {
+  id: text('id').primaryKey(),
+  clerkUserId: text('clerk_user_id').notNull().unique(),
+  displayName: text('display_name').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+})
+
+export const scoloWallets = sqliteTable('scolo_wallets', {
+  playerId: text('player_id').primaryKey().references(() => scoloPlayers.id),
+  balance: integer('balance').notNull().default(0),
+})
+
+export const scoloRounds = sqliteTable('scolo_rounds', {
+  id: text('id').primaryKey(),
+  openedAt: integer('opened_at', { mode: 'timestamp_ms' }).notNull(),
+  status: text('status', { enum: ['open', 'settled'] }).notNull(),
+  closedAt: integer('closed_at', { mode: 'timestamp_ms' }),
+})
+
+export const scoloPredictions = sqliteTable('scolo_predictions', {
+  id: text('id').primaryKey(),
+  playerId: text('player_id').notNull().references(() => scoloPlayers.id),
+  roundId: text('round_id').notNull().references(() => scoloRounds.id),
+  predictedAt: integer('predicted_at', { mode: 'timestamp_ms' }).notNull(),
+  stake: integer('stake').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  idempotencyKey: text('idempotency_key').notNull(),
+  status: text('status', { enum: ['active', 'won', 'lost', 'refunded'] }).notNull(),
+  payout: integer('payout').notNull().default(0),
+})
+
+export const scoloWalletEntries = sqliteTable('scolo_wallet_entries', {
+  id: text('id').primaryKey(),
+  playerId: text('player_id').notNull().references(() => scoloPlayers.id),
+  amount: integer('amount').notNull(),
+  kind: text('kind', { enum: ['welcome', 'reserve', 'payout', 'refund', 'fixture', 'round_bonus'] }).notNull(),
+  reference: text('reference').notNull().unique(),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+})
+
+export const scoloSettlements = sqliteTable('scolo_settlements', {
+  roundId: text('round_id').primaryKey().references(() => scoloRounds.id),
+  observedAt: integer('observed_at', { mode: 'timestamp_ms' }).notNull(),
+  tool: text('tool').notNull(),
+  declaredAt: integer('declared_at', { mode: 'timestamp_ms' }).notNull(),
+  pot: integer('pot').notNull(),
+  totalRefunded: integer('total_refunded').notNull(),
+  winningDistanceMs: integer('winning_distance_ms'),
+  nextRoundId: text('next_round_id').notNull().references(() => scoloRounds.id),
+  appearanceId: integer('appearance_id').notNull().references(() => scoloData.id),
+})

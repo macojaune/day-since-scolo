@@ -1,0 +1,160 @@
+.picker {
+  position: relative;
+  min-width: 0;
+}
+.fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 140px;
+  gap: 16px;
+}
+.field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.field label {
+  font-weight: 650;
+}
+.dateButton,
+.field input {
+  width: 100%;
+  min-width: 0;
+  min-height: 50px;
+  padding: 11px 14px;
+  border: 1px solid #585043;
+  border-radius: 8px;
+  background: #141414;
+  color: #fff;
+  font: inherit;
+  font-size: 16px;
+}
+.dateButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+}
+.dateButton svg {
+  flex-shrink: 0;
+  color: #facc15;
+}
+.dateButton:hover,
+.dateButton[aria-expanded='true'] {
+  border-color: #facc15;
+}
+.field input {
+  color-scheme: dark;
+  font-variant-numeric: tabular-nums;
+}
+.hint {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  color: #bcbcbc;
+}
+.popover {
+  position: absolute;
+  top: 82px;
+  left: 0;
+  z-index: 30;
+  width: min(352px, 100%);
+  padding: 12px;
+  background: #141414;
+  color: #fff;
+  border: 1px solid #585043;
+  border-radius: 12px;
+}
+.popover :global(.rdp-root) {
+  --rdp-accent-color: #facc15;
+  --rdp-accent-background-color: #facc15;
+  --rdp-today-color: #facc15;
+  --rdp-day-height: 42px;
+  --rdp-day-width: 100%;
+  --rdp-day_button-height: 40px;
+  --rdp-day_button-width: 100%;
+  --rdp-day_button-border-radius: 6px;
+  --rdp-selected-border: 1px solid #facc15;
+  --rdp-nav_button-height: 36px;
+  --rdp-nav_button-width: 32px;
+  --rdp-disabled-opacity: 0.3;
+  --rdp-outside-opacity: 0.6;
+  font-size: 1rem;
+}
+.popover :global(.rdp-months),
+.popover :global(.rdp-month) {
+  width: 100%;
+  max-width: none;
+}
+.popover :global(.rdp-month_grid) {
+  width: 100%;
+  table-layout: fixed;
+}
+.popover :global(.rdp-month_caption) {
+  height: 44px;
+  padding: 0;
+  justify-content: center;
+}
+.popover :global(.rdp-caption_label) {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.popover :global(.rdp-weekday) {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #bcbcbc;
+  opacity: 1;
+  padding: 10px 0;
+}
+.popover :global(.rdp-day_button) {
+  font: inherit;
+  font-weight: 600;
+}
+.popover :global(.rdp-day_button):hover:not(:disabled) {
+  background: #38342a;
+}
+.popover :global(.rdp-selected) :global(.rdp-day_button) {
+  background: #facc15;
+  color: #000;
+  font-weight: 750;
+}
+.popover :global(.rdp-selected) :global(.rdp-day_button):hover {
+  background: #facc15;
+}
+.shortcuts {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid #38342a;
+}
+.shortcuts button {
+  min-height: 36px;
+  padding: 4px;
+  color: #facc15;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.picker :focus-visible {
+  outline: 2px solid #facc15;
+  outline-offset: 3px;
+}
+.picker button:disabled,
+.picker input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+@media (max-width: 480px) {
+  .fields {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .field input {
+    max-width: 160px;
+  }
+  .popover :global(.rdp-root) {
+    --rdp-day-height: 38px;
+    --rdp-day_button-height: 36px;
+  }
+}

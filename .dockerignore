@@ -4,3 +4,10 @@ node_modules
 .github
 npm-debug.log
 .env*
+.local
+.worktree
+.impeccable
+playwright-report
+test-results
+*.sqlite
+*.db

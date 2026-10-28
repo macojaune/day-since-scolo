@@ -47,3 +47,11 @@ yarn-error.log*
 # Local Netlify folder
 .netlify
 drizzle/
+# Local game and verification artifacts
+.local/
+playwright-report/
+test-results/
+.impeccable/review/
+.impeccable/live/sessions/
+.impeccable/live/inject-journal.json
+.impeccable/live/server*

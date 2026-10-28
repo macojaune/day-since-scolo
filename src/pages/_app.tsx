@@ -1,31 +1,27 @@
+import { ClerkProvider } from '@clerk/nextjs'
+import { frFR } from '@clerk/localizations'
 import { GeistSans } from 'geist/font/sans'
-import { type Session } from 'next-auth'
-import { SessionProvider } from 'next-auth/react'
-import { type AppType } from 'next/app'
+import type { AppType } from 'next/app'
 
+import { env } from '~/env'
 import { api } from '~/utils/api'
-
+import '@daypicker/react/style.css'
 import '~/styles/globals.css'
-import Script from 'next/script'
 
-const MyApp: AppType<{ session: Session | null }> = ({
-  Component,
-  pageProps: { session, ...pageProps },
-}) => {
-  return (
-    <>
-      <Script
-        defer
-        src="https://analytics.marvinl.com/script.js"
-        data-website-id="e5e9b232-675e-4172-b463-32c56e9dc567"
-      />
-      <SessionProvider session={session}>
-        <div className={GeistSans.className}>
-          <Component {...pageProps} />
-        </div>
-      </SessionProvider>
-    </>
-  )
-}
+const MyApp: AppType = ({ Component, pageProps }) => (
+  <ClerkProvider
+    {...pageProps}
+    publishableKey={env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+    localization={frFR}
+    signInUrl="/sign-in"
+    signUpUrl="/sign-up"
+    signInFallbackRedirectUrl="/"
+    signUpFallbackRedirectUrl="/"
+  >
+    <div className={GeistSans.className}>
+      <Component {...pageProps} />
+    </div>
+  </ClerkProvider>
+)
 
 export default api.withTRPC(MyApp)

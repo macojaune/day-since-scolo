@@ -1,88 +1,37 @@
-import { DrizzleAdapter } from '@auth/drizzle-adapter'
-import { type GetServerSidePropsContext } from 'next'
-import {
-  getServerSession,
-  type DefaultSession,
-  type NextAuthOptions,
-} from 'next-auth'
-import { type Adapter } from 'next-auth/adapters'
-import TwitterProvider from 'next-auth/providers/twitter'
-import EmailProvider from 'next-auth/providers/email'
+import { getAuth } from '@clerk/nextjs/server'
+import { TRPCError } from '@trpc/server'
+import type { NextApiRequest } from 'next'
 
 import { env } from '~/env'
-import { db } from '~/server/db'
+import { isAllowedApplicationHost, isSameOriginMutation, isConfiguredAdmin } from '../config.js'
 
-/**
- * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
- * object and keep type safety.
- *
- * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
- */
-declare module 'next-auth' {
-  interface Session extends DefaultSession {
-    user: {
-      id: string
-      // ...other properties
-      // role: UserRole;
-    } & DefaultSession['user']
+export { isLoopbackHost } from '../config.js'
+
+/** Reject hosts outside the configured environment before processing any identity. */
+export function assertLocalRequest(req: NextApiRequest): void {
+  if (!isAllowedApplicationHost(req.headers.host, env)) {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: 'Cette adresse ne correspond pas à cet environnement Scolo.',
+    })
   }
-
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
 }
 
-/**
- * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
- *
- * @see https://next-auth.js.org/configuration/options
- */
-export const authOptions: NextAuthOptions = {
-  callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
-  },
-  adapter: DrizzleAdapter(db) as Adapter,
-  providers: [
-    TwitterProvider({
-      clientId: env.TWITTER_CLIENT_ID,
-      clientSecret: env.TWITTER_CLIENT_SECRET,
-      version: '2.0',
-    }),
-    EmailProvider({
-      server: process.env.EMAIL_SERVER,
-      from: process.env.EMAIL_FROM,
-    }),
-    // DiscordProvider({
-    //   clientId: env.DISCORD_CLIENT_ID,
-    //   clientSecret: env.DISCORD_CLIENT_SECRET,
-    // }),
-    /**
-     * ...add more providers here.
-     *
-     * Most other providers require a bit more work than the Discord provider. For example, the
-     * GitHub provider requires you to add the `refresh_token_expires_in` field to the Account
-     * model. Refer to the NextAuth.js docs for the provider you want to use. Example:
-     *
-     * @see https://next-auth.js.org/providers/github
-     */
-  ],
+/** Only browser requests from this exact application may change game state. */
+export function assertMutationOrigin(req: NextApiRequest): void {
+  if (!isSameOriginMutation({ host: req.headers.host, origin: req.headers.origin, fetchSite: req.headers['sec-fetch-site'] }, env)) {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: 'Effectue cette action depuis Scolo.',
+    })
+  }
 }
 
-/**
- * Wrapper for `getServerSession` so that you don't need to import the `authOptions` in every file.
- *
- * @see https://next-auth.js.org/configuration/nextjs
- */
-export const getServerAuthSession = (ctx: {
-  req: GetServerSidePropsContext['req']
-  res: GetServerSidePropsContext['res']
-}) => {
-  return getServerSession(ctx.req, ctx.res, authOptions)
+export function isAdminUser(userId: string | null): boolean {
+  return isConfiguredAdmin(userId, env.SCOLO_ADMIN_USER_IDS)
+}
+
+export function getRequestIdentity(req: NextApiRequest) {
+  const { userId } = getAuth(req)
+  return { userId, isAdmin: isAdminUser(userId) }
 }
