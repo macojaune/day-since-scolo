@@ -2,6 +2,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 import { frFR } from '@clerk/localizations'
 import { GeistSans } from 'geist/font/sans'
 import type { AppType } from 'next/app'
+import Analytics from '~/components/Analytics'
 
 import { env } from '~/env'
 import { api } from '~/utils/api'
@@ -18,6 +19,7 @@ const MyApp: AppType = ({ Component, pageProps }) => (
     signInFallbackRedirectUrl="/"
     signUpFallbackRedirectUrl="/"
   >
+    <Analytics />
     <div className={GeistSans.className}>
       <Component {...pageProps} />
     </div>

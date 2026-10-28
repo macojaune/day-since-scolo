@@ -118,9 +118,11 @@ export class GameService {
 
   async ensurePlayer(input: PlayerInput) {
     return this.write(async transaction => {
+      textInput(input.userId, 'Identité')
+      const existing = await query(transaction, 'SELECT id FROM scolo_players WHERE clerk_user_id = ?', [input.userId])
       const player = await this.ensurePlayerIn(transaction, input, this.clock().getTime())
       const wallet = (await query(transaction, 'SELECT balance FROM scolo_wallets WHERE player_id = ?', [String(player.id)]))[0]!
-      return { id: String(player.id), displayName: String(player.display_name), balance: Number(wallet.balance) }
+      return { id: String(player.id), displayName: String(player.display_name), balance: Number(wallet.balance), created: existing.length === 0 }
     })
   }
 
