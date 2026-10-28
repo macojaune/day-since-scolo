@@ -5,6 +5,11 @@ import PersonalTickets from '~/components/PersonalTickets'
 import type { PublicGame } from '~/server/game/types'
 import { api, type RouterOutputs } from '~/utils/api'
 import {
+  analyticsErrorReason,
+  betAnalyticsData,
+  trackGameEvent,
+} from '~/utils/analytics'
+import {
   isCalendarDay,
   rememberDraftForSignIn,
   restorePredictionDraft,
@@ -59,7 +64,14 @@ export default function PredictionGame({
   )
   const utils = api.useUtils()
   const bet = api.app.bet.useMutation({
-    onSuccess: async (_data, variables) => {
+    onSuccess: async (data, variables) => {
+      if (!game.isSimulated) {
+        trackGameEvent(
+          'bet_confirmed',
+          betAnalyticsData(variables.predictedAt, variables.stake),
+          `confirmed:${data.prediction.id}`
+        )
+      }
       setReceipt({
         date: variables.predictedAt.toISOString(),
         stake: variables.stake,
@@ -74,6 +86,15 @@ export default function PredictionGame({
         utils.app.game.invalidate(),
         utils.app.me.invalidate(),
       ])
+    },
+    onError: (error, variables) => {
+      if (!game.isSimulated) {
+        const reason = analyticsErrorReason(error.data?.code)
+        trackGameEvent(reason === 'unavailable' || reason === 'server_error' ? 'bet_failed' : 'bet_rejected', {
+          ...betAnalyticsData(variables.predictedAt, variables.stake),
+          reason,
+        })
+      }
     },
     onSettled: () => {
       sending.current = false
@@ -115,6 +136,31 @@ export default function PredictionGame({
     player?.predictions.filter(
       (ticket) => ticket.roundId === game.round.id && ticket.status === 'active'
     ) ?? []
+  const activeTicketCount = activeTickets.length
+  useEffect(() => {
+    if (
+      !game.isSimulated &&
+      ready &&
+      userId &&
+      player?.registered &&
+      noFunds
+    ) {
+      trackGameEvent(
+        'wallet_empty',
+        { committed: player.committed, tickets: activeTicketCount },
+        `empty:${userId}:${game.round.id}`
+      )
+    }
+  }, [
+    game.isSimulated,
+    game.round.id,
+    ready,
+    userId,
+    player?.registered,
+    player?.committed,
+    noFunds,
+    activeTicketCount,
+  ])
   const myDays = new Map<string, { count: number; stake: number }>()
   for (const ticket of activeTickets) {
     const date = dayOf(new Date(ticket.predictedAt))
@@ -150,13 +196,25 @@ export default function PredictionGame({
     bet.reset()
     request.current = null
   }
-  function chooseDay(value: string) {
+  function chooseDay(value: string, source: 'calendar' | 'ticket' = 'calendar') {
     if (sending.current || !isCalendarDay(value)) return
+    if (!game.isSimulated && value !== day && today && value >= today) {
+      trackGameEvent('bet_date_selected', {
+        ...betAnalyticsData(asDate(value), Number(stake)),
+        source,
+      })
+    }
     setDay(value)
     edit()
   }
   function chooseStake(value: string) {
     if (sending.current) return
+    if (!game.isSimulated && value !== stake) {
+      trackGameEvent(
+        'bet_stake_changed',
+        betAnalyticsData(asDate(day), Number(value))
+      )
+    }
     setStake(value)
     edit()
   }
@@ -168,7 +226,7 @@ export default function PredictionGame({
       setWindowStart(start)
   }
   function selectTicketDate(value: string) {
-    chooseDay(value)
+    chooseDay(value, 'ticket')
     if (value < windowStart || !windowEnd || value > windowEnd)
       setWindowStart(value)
     requestAnimationFrame(() =>
@@ -223,6 +281,9 @@ export default function PredictionGame({
       /* Optional storage. */
     }
     sending.current = true
+    if (!game.isSimulated) {
+      trackGameEvent('bet_submitted', betAnalyticsData(predictedAt, amount))
+    }
     bet.mutate({
       viewerId: userId,
       roundId: game.round.id,
@@ -511,7 +572,15 @@ export default function PredictionGame({
                         className="button button-primary"
                         type="button"
                         disabled={!validDay || !validStake}
-                        onClick={() => rememberDraftForSignIn(game.round.id)}
+                        onClick={() => {
+                          rememberDraftForSignIn(game.round.id)
+                          if (!game.isSimulated) {
+                            trackGameEvent('game_sign_in_requested', {
+                              ...betAnalyticsData(asDate(day), amount),
+                              source: 'bet',
+                            })
+                          }
+                        }}
                       >
                         Me connecter pour confirmer
                       </button>

@@ -8,6 +8,7 @@ import PredictionGame from '~/components/PredictionGame'
 import ZikakLabel from '~/components/ZikakLabel'
 import type { PublicGame } from '~/server/game/types'
 import { api } from '~/utils/api'
+import { trackGameEvent } from '~/utils/analytics'
 import { rememberDraftForSignIn } from '~/utils/game-draft'
 import {
   formatDate,
@@ -19,6 +20,7 @@ import {
 export default function GamePage() {
   const { isLoaded, isSignedIn, userId } = useAuth()
   const [joinedUser, setJoinedUser] = useState<string | null>(null)
+  const [newEnrollment, setNewEnrollment] = useState<{ playerId: string; viewerId: string } | null>(null)
   const joiningUser = useRef<string | null>(null)
   const activeUser = useRef(userId)
   activeUser.current = userId
@@ -29,8 +31,9 @@ export default function GamePage() {
     { enabled: Boolean(isSignedIn && joinedUser === userId), retry: false }
   )
   const join = api.app.join.useMutation({
-    onSuccess: async (_data, variables) => {
+    onSuccess: async (data, variables) => {
       if (variables.viewerId === activeUser.current) {
+        if (data.created) setNewEnrollment({ playerId: data.id, viewerId: variables.viewerId })
         await utils.app.me.reset({ viewerId: variables.viewerId })
         if (variables.viewerId === activeUser.current)
           setJoinedUser(variables.viewerId)
@@ -47,6 +50,13 @@ export default function GamePage() {
     // Enrollment is idempotent and tied to the authenticated identity.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, isSignedIn, userId])
+  useEffect(() => {
+    if (!newEnrollment || !game.data) return
+    if (newEnrollment.viewerId === userId && game.data.isSimulated === false) {
+      trackGameEvent('game_joined', undefined, newEnrollment.playerId)
+    }
+    setNewEnrollment(null)
+  }, [newEnrollment, game.data, userId])
   const player = joinedUser === userId ? me.data : undefined
 
   return (
@@ -93,9 +103,13 @@ export default function GamePage() {
                 <button
                   className="button button-small"
                   type="button"
-                  onClick={() =>
-                    game.data && rememberDraftForSignIn(game.data.round.id)
-                  }
+                  onClick={() => {
+                    if (game.data) {
+                      if (game.data.isSimulated === false)
+                        trackGameEvent('game_sign_in_requested', { source: 'header' })
+                      rememberDraftForSignIn(game.data.round.id)
+                    }
+                  }}
                 >
                   Se connecter
                 </button>

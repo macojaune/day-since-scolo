@@ -89,6 +89,29 @@ export default function PrivacyPage() {
           </p>
         </section>
 
+        <section aria-labelledby="privacy-audience">
+          <h2 id="privacy-audience">Les visites et les actions de jeu</h2>
+          <p>
+            Umami, hébergé sur analytics.marvinl.com, mesure les visites et
+            l’utilisation du jeu : choix d’une date, montant de la mise,
+            demande de connexion, inscription au jeu et paris confirmés ou refusés.
+            Il permet aussi de compter les situations où le solde est épuisé.
+          </p>
+          <p>
+            Ces statistiques ne reçoivent ni ton email, ni ton pseudo, ni
+            l’identifiant de ton compte. La date choisie est transmise comme
+            un nombre de jours à partir d’aujourd’hui. Les pages de connexion
+            et d’administration sont exclues, tout comme les paramètres des URL.
+            Les informations de visite comprennent notamment la langue,
+            la taille d’écran et le site d’origine de la visite.
+          </p>
+          <p>
+            Ce suivi n’ajoute pas de cookie. Des références restent dans le
+            stockage de l’onglet pour éviter de compter deux fois le même
+            résultat ; elles ne sont pas transmises à Umami.
+          </p>
+        </section>
+
         <section aria-labelledby="privacy-browser">
           <h2 id="privacy-browser">Dans ton navigateur</h2>
           <p>
