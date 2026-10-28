@@ -104,9 +104,9 @@ export default function GamePage() {
                   className="button button-small"
                   type="button"
                   onClick={() => {
+                    if (game.data?.isSimulated !== true)
+                      trackGameEvent('game_sign_in_requested', { source: 'header' })
                     if (game.data) {
-                      if (game.data.isSimulated === false)
-                        trackGameEvent('game_sign_in_requested', { source: 'header' })
                       rememberDraftForSignIn(game.data.round.id)
                     }
                   }}
