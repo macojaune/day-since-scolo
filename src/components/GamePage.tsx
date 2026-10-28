@@ -68,7 +68,6 @@ export default function GamePage() {
           content="Le compteur de jours sans scolopendre, le journal des rencontres et tes pronostics sur la prochaine apparition."
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
       {game.data?.isSimulated && <div className="sandbox-note">
         Bac à sable local · Apparitions de démonstration et Zikak de test ·
