@@ -5,10 +5,10 @@ import Link from 'next/link'
 export default function SignUpPage() {
   return (
     <main className="auth-shell">
-      <Head><title>Inscription · Scolo</title></Head>
-      <Link href="/" className="auth-back">Retour à Scolo</Link>
+      <Head><title>Inscription · BÈT a milpat</title></Head>
+      <Link href="/" className="auth-back">Retour à BÈT a milpat</Link>
       <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" fallbackRedirectUrl="/" />
-      <Link href="/confidentialite" className="auth-back">Tes données sur Scolo</Link>
+      <Link href="/confidentialite" className="auth-back">Tes données sur BÈT a milpat</Link>
     </main>
   )
 }
