@@ -44,7 +44,7 @@ export default function AdminPage() {
       </Head>
       {game.data?.isSimulated && (
         <div className="sandbox-note">
-          Bac à sable local · Zikak de test
+          {game.data.environment === 'dev' ? 'Environnement DEV' : 'Bac à sable local'} · Zikak de test
         </div>
       )}
       <main className="page-shell admin-page">
@@ -398,17 +398,20 @@ function PointSyncPanel() {
   if (!status.data?.enabled && !status.error) return null
   const waiting = (status.data?.pending ?? 0) > 0
   const blocked = (status.data?.blocked ?? 0) > 0
+  const awaitingIdentity = status.data?.awaitingIdentity ?? 0
   return (
     <section className="admin-panel" aria-labelledby="point-sync-title">
-      <h2 id="point-sync-title">Points Zikak · DEV</h2>
+      <h2 id="point-sync-title">Transmission des points à Zikak</h2>
       <p role="status">
         {status.error ? 'Impossible de vérifier la transmission des points.'
+          : awaitingIdentity > 0 ? `${awaitingIdentity} joueur${awaitingIdentity>1?'s attendent':' attend'} un rapprochement dans Zikak. Les points sont conservés ; les autres joueurs continuent.`
           : blocked ? 'L’envoi à Zikak est bloqué. Les gains restent enregistrés dans le jeu.'
             : waiting ? 'Les points attendent leur confirmation par Zikak. La transmission reprend automatiquement.'
               : status.data?.sent ? 'Les points des manches réglées ont été transmis à Zikak.'
                 : 'Les points seront transmis à la prochaine apparition.'}
       </p>
-      {(waiting || blocked) && <button type="button" className="button" disabled={retry.isPending} onClick={() => retry.mutate()}>
+      {awaitingIdentity>0 && <p><a href="https://zikak-dev.marvinl.com/members" target="_blank" rel="noreferrer">Vérifier les rapprochements dans Zikak</a></p>}
+      {(waiting || blocked || awaitingIdentity>0) && <button type="button" className="button" disabled={retry.isPending} onClick={() => retry.mutate()}>
         {retry.isPending ? 'Relance…' : 'Relancer la transmission'}
       </button>}
       {retry.error && <p role="alert">La relance a échoué. Les points à transmettre sont conservés.</p>}

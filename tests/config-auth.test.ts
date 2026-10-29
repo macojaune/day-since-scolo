@@ -28,6 +28,18 @@ const publicConfig = {
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_live_test-only',
 }
 
+test('DEV is a hosted service with Clerk Development and its own storage', () => {
+  const dev = { ...local, SCOLO_ENVIRONMENT: 'dev' as const, APP_URL: 'https://scolo-dev.example.com', DATABASE_URL: 'file:/data/scolo-dev.db' }
+  assert.doesNotThrow(() => assertDeploymentConfiguration(dev))
+  assert.equal(applicationOrigin(dev), 'https://scolo-dev.example.com')
+  assert.equal(isAllowedApplicationHost('scolo-dev.example.com', dev), true)
+  assert.equal(isAllowedApplicationHost('localhost:3092', dev), false)
+  assert.throws(() => assertDeploymentConfiguration({ ...dev, CLERK_SECRET_KEY: 'sk_live_test-only' }))
+  assert.throws(() => assertDeploymentConfiguration({ ...dev, SCOLO_TWEETS_ENABLED: 'true' }))
+  assert.throws(() => assertDeploymentConfiguration({ ...dev, APP_URL: local.APP_URL }))
+  assert.throws(() => assertDeploymentConfiguration({ ...dev, SCOLO_ENVIRONMENT: 'prod' }))
+})
+
 test('local and public Scolo configurations stay isolated, including Clerk key kind', () => {
   assert.doesNotThrow(() => assertDeploymentConfiguration(local))
   assert.doesNotThrow(() => assertDeploymentConfiguration(publicConfig))

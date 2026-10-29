@@ -1,8 +1,9 @@
 import type { Client } from '@libsql/client'
 import { tweetOutboxSchema } from '../social/tweet-outbox'
 import { zikakOutboxSchema } from '../zikak/outbox'
+import { pointJobsSchema } from '../zikak/jobs'
 
-export const GAME_SCHEMA_VERSION = '2026-10-29-zikak-outbox-v1'
+export const GAME_SCHEMA_VERSION = '2026-10-29-zikak-identities-v2'
 
 // Repeatable bootstrap. Historical auth, credits and bets are neither
 // rewritten nor considered spendable Zikak. CHECKs also protect direct SQL use.
@@ -77,6 +78,7 @@ const statements = [
     key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL
   )`,
   ...zikakOutboxSchema,
+  ...pointJobsSchema,
 ]
 
 /** The dry-run lists tables from the same statements that the migration executes. */
