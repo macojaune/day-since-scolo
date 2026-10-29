@@ -1,5 +1,10 @@
 # Portefeuille Zikak et jeu local
 
+La V1 DEV synchronise désormais les mouvements à la déclaration d’une nouvelle
+apparition, sans appel Zikak à chaque pari. Elle est désactivée par défaut et
+limitée au DEV local. Voir [le contrat et l’exploitation V1](zikak-settlement-sync-v1.md).
+Les réservations centrales décrites ci-dessous sont la cible ultérieure.
+
 Scolo prépare deux modes : des points de test locaux en DEV, et des Zikak
 persistants propres à Scolo en PROD. Le futur portefeuille global n’est pas
 encore raccordé. Voir [la préparation de production](production-preparation.md)

@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import type { Client, InArgs, Row, Transaction } from '@libsql/client'
 import { GAME_SCHEMA_VERSION, migrateLocalDatabase } from '../db/local-migrations'
 import { enqueueAppearanceTweet } from '../social/tweet-outbox'
+import { enqueuePointBatches } from '../zikak/outbox'
 import { calculateReplayBonuses, calculateSettlement, gameDayStart, safeTotal, type SettlementTicket } from './settlement'
 import { ensurePlayerInTransaction } from './player'
 import {
@@ -19,7 +20,7 @@ import {
   type SettlementResult,
 } from './types'
 
-interface ClockOptions { now?: () => Date; id?: () => string; walletMode?: WalletMode; tweetEnabled?: boolean }
+interface ClockOptions { now?: () => Date; id?: () => string; walletMode?: WalletMode; tweetEnabled?: boolean; zikakApplicationId?: string }
 type Connection = Pick<Client, 'execute'> | Transaction
 const queues = new WeakMap<Client, Promise<unknown>>()
 
@@ -52,12 +53,17 @@ export class GameService {
   private readonly newId: () => string
   private readonly walletMode: WalletMode
   private readonly tweetEnabled: boolean
+  private readonly zikakApplicationId?: string
 
   constructor(private readonly client: Client, options: ClockOptions = {}) {
     this.clock = options.now ?? (() => new Date())
     this.newId = options.id ?? randomUUID
     this.walletMode = options.walletMode ?? 'local'
     this.tweetEnabled = this.walletMode === 'scolo' && options.tweetEnabled === true
+    if (options.zikakApplicationId && (this.walletMode !== 'local' || !/^scolo-dev(?:-[a-z0-9-]+)?$/.test(options.zikakApplicationId))) {
+      throw new GameError('CONFIGURATION_ERROR', 'La synchronisation Zikak est limitée à une application Scolo DEV.')
+    }
+    this.zikakApplicationId = options.zikakApplicationId
   }
 
   async initialize() {
@@ -70,6 +76,10 @@ export class GameService {
       if (!version.length) throw new GameError('CONFIGURATION_ERROR', 'La migration du jeu doit être appliquée avant son ouverture.')
     }
     await this.write(async transaction => {
+      if (this.zikakApplicationId) {
+        const otherSource = await query(transaction, 'SELECT 1 FROM scolo_zikak_batches WHERE application_id <> ? LIMIT 1', [this.zikakApplicationId])
+        if (otherSource.length) throw new GameError('CONFIGURATION_ERROR', 'Cette base est déjà liée à une autre application Zikak DEV.')
+      }
       const open = await query(transaction, "SELECT id FROM scolo_rounds WHERE status = 'open'")
       if (!open.length) {
         await transaction.execute({
@@ -317,6 +327,9 @@ export class GameService {
       await enqueueAppearanceTweet(transaction, {
         appearanceId: Number(appearance.id), observedAt: input.observedAt, tool: input.tool, createdAt: now,
       }, this.tweetEnabled)
+      if (this.zikakApplicationId) await enqueuePointBatches(transaction, {
+        roundId: input.roundId, applicationId: this.zikakApplicationId, now, id: this.newId,
+      })
       return { ...result, nextRoundId, appearanceId: Number(appearance.id) }
     })
   }

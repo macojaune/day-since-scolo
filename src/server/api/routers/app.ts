@@ -4,6 +4,7 @@ import { clerkClient } from '@clerk/nextjs/server'
 import { adminProcedure, createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc'
 import { GameError, getGameService } from '~/server/game'
 import { publishAppearanceIfEnabled } from '~/server/social/appearance-publication'
+import { flushPointSync, getPointSyncStatus } from '~/server/zikak/runtime'
 
 const settlementInput = z.object({
   roundId: z.string().min(1),
@@ -55,9 +56,13 @@ export const appRouter = createTRPCRouter({
     idempotencyKey: z.string().min(8).max(128),
   })).mutation(({ ctx, input }) => handleGame(async () => (await getGameService()).addHistoricalAppearance({ ...input, actorUserId: ctx.userId }))),
   previewSettlement: adminProcedure.input(settlementInput).mutation(({ input }) => handleGame(async () => (await getGameService()).previewSettlement(input))),
+  pointSyncStatus: adminProcedure.query(() => handleGame(async () => { await getGameService(); return getPointSyncStatus() })),
+  retryPointSync: adminProcedure.mutation(() => handleGame(async () => { await getGameService(); return flushPointSync(true) })),
   settleRound: adminProcedure.input(settlementInput).mutation(({ input }) => handleGame(async () => {
     const result = await (await getGameService()).settleRound(input)
     const publication = result.appearanceId ? await publishAppearanceIfEnabled(result.appearanceId) : undefined
-    return { ...result, publication }
+    // The committed settlement is successful even when the remote sync is unavailable.
+    const pointSync = await flushPointSync().catch(() => null)
+    return { ...result, publication, pointSync }
   })),
 })

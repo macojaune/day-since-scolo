@@ -72,7 +72,7 @@ export default function GamePage() {
       </Head>
       {game.data?.isSimulated && <div className="sandbox-note">
         Bac à sable local · Apparitions de démonstration et Zikak de test ·
-        Aucun effet sur ton portefeuille global
+        Les points de cette version servent aux tests
       </div>}
       <div className="page-shell">
         <header className="site-header">

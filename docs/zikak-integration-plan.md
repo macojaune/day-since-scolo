@@ -1,7 +1,10 @@
 # Raccordement de BÈT a milpat au moteur Zikak
 
-Contrôle du 29 octobre 2026 UTC. Ce plan décrit le contrat à construire.
-La synchronisation n’est pas active.
+Contrôle du 29 octobre 2026 UTC. Ce document décrit la cible de portefeuille
+central, différée. La première version demandée depuis par Marvin synchronise
+les mouvements au règlement d’une manche : voir
+[le contrat V1](zikak-settlement-sync-v1.md). Elle est en cours de validation DEV,
+désactivée par défaut et n’est pas active en production.
 
 ## État vérifié
 
@@ -107,11 +110,12 @@ Après les premiers mouvements globaux, revenir au mode local ne peut pas
 réactiver les anciens soldes : il faut arrêter les mises et rapprocher les points.
 La production du jeu doit viser un Zikak PROD vérifié, pas le service DEV actuel.
 
-## Prochain lot
+## Cible ultérieure : portefeuille central
 
-Construire d’abord le contrat de portefeuille idempotent dans Zikak DEV avec
+Après la V1 au règlement, construire le contrat de portefeuille idempotent avec
 tests HTTP et base jetable : deux mises concurrentes pour les derniers points,
 réponse perdue, solde insuffisant, fermeture concurrente, conservation de cagnotte
 et bonus global conditionnel. Puis raccorder le jeu et répéter l’import à blanc.
 
-Aucune écriture Zikak ni modification distante n’a été effectuée pendant l’audit.
+L’état vérifié plus haut est celui de l’audit initial ; il ne vaut pas preuve
+de livraison du raccordement. Les essais de la V1 utilisent des bases jetables.
