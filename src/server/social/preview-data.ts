@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import type { Client } from '@libsql/client'
 import { GameService } from '../game/service'
 import type { PublicGame, WalletMode } from '../game/types'
-import { SOCIAL_TITLE, type SocialCardData, type SocialMetadata, type SocialWeapon } from '../../utils/social-preview'
+import { SOCIAL_IMAGE_VERSION, SOCIAL_TITLE, type SocialCardData, type SocialMetadata, type SocialWeapon } from '../../utils/social-preview'
 export type { SocialCardData, SocialMetadata } from '../../utils/social-preview'
 
 const weapons = {
@@ -31,7 +31,7 @@ export async function readSocialCardData(client: Client, mode: WalletMode, now =
 }
 
 export function socialCardVersion(data: SocialCardData) {
-  return createHash('sha256').update(`scolo-og-v1:${JSON.stringify(data)}`).digest('hex').slice(0, 16)
+  return createHash('sha256').update(`${SOCIAL_IMAGE_VERSION}:${JSON.stringify(data)}`).digest('hex').slice(0, 16)
 }
 
 export function socialImageAlt(data: SocialCardData) {

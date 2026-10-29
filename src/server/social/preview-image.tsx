@@ -34,7 +34,10 @@ export function SocialPreviewImage({ data, image }: { data: SocialCardData; imag
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: SOCIAL_WIDTH, height: SOCIAL_HEIGHT, background: '#000', color: '#fff', fontFamily: 'Geist', padding: '36px 54px 0' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 40, fontWeight: 700, letterSpacing: -1.5 }}>scolo</span>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <span style={{ fontSize: 46, fontWeight: 700, letterSpacing: -1.5 }}>BÈT</span>
+          <span style={{ fontSize: 19, fontWeight: 700, color: yellow, marginLeft: 10, marginTop: 15 }}>a milpat</span>
+        </div>
         <span style={{ color: '#bcbcbc', fontSize: 21 }}>scolo.marvinl.com</span>
       </div>
       <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'space-between' }}>

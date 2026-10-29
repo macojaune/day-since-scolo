@@ -39,7 +39,7 @@ export default function AdminPage() {
   return (
     <div className="scolo-app" data-direction="veille">
       <Head>
-        <title>Déclarer une apparition · Scolo</title>
+        <title>Déclarer une apparition · BÈT a milpat</title>
         <meta name="robots" content="noindex, nofollow" />
       </Head>
       {game.data?.isSimulated && (
@@ -52,7 +52,7 @@ export default function AdminPage() {
           <Link href="/" className="button">
             ← Retour au jeu
           </Link>
-          <p className="admin-eyebrow">Le journal de Scolo</p>
+          <p className="admin-eyebrow">Le journal de BÈT a milpat</p>
           <h1>Une nouvelle rencontre ?</h1>
           <p>
             Indique quand tu as vu le scolo. Règle la manche en cours ou complète
