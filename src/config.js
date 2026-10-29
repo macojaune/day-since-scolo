@@ -1,10 +1,21 @@
 /** @typedef {'local' | 'scolo'} WalletMode */
+/** @typedef {'local' | 'dev' | 'prod'} ApplicationEnvironment */
+/** @typedef {{ SCOLO_WALLET_MODE: WalletMode, SCOLO_ENVIRONMENT?: ApplicationEnvironment }} EnvironmentConfiguration */
 /** @typedef {{ SCOLO_WALLET_MODE: WalletMode, DATABASE_URL: string, DATABASE_AUTH_TOKEN?: string }} DatabaseConfiguration */
-/** @typedef {{ SCOLO_WALLET_MODE: WalletMode, APP_URL: string }} ApplicationConfiguration */
+/** @typedef {EnvironmentConfiguration & { APP_URL: string }} ApplicationConfiguration */
 /** @typedef {{ SCOLO_TWEETS_ENABLED?: 'true' | 'false', TWITTER_API_KEY?: string, TWITTER_API_SECRET?: string, TWITTER_ACCESS_TOKEN?: string, TWITTER_ACCESS_SECRET?: string }} TweetConfiguration */
-/** @typedef {{ SCOLO_ZIKAK_SYNC_ENABLED?: 'true' | 'false', ZIKAK_API_ORIGIN?: string, ZIKAK_APPLICATION_ID?: string, ZIKAK_INTEGRATION_TOKEN?: string, SCOLO_WALLET_MODE: WalletMode }} PointSyncConfiguration */
+/** @typedef {EnvironmentConfiguration & { SCOLO_ZIKAK_SYNC_ENABLED?: 'true' | 'false', ZIKAK_API_ORIGIN?: string, ZIKAK_APPLICATION_ID?: string, ZIKAK_INTEGRATION_TOKEN?: string }} PointSyncConfiguration */
 
 const loopbackNames = new Set(['localhost', '127.0.0.1', '[::1]'])
+
+/** Environment is independent from SQLite/Turso storage. Legacy configs keep their meaning.
+ * @param {EnvironmentConfiguration} config @returns {ApplicationEnvironment} */
+export function applicationEnvironment(config) {
+  if (!['local', 'scolo'].includes(config.SCOLO_WALLET_MODE)) throw new Error('Mode de portefeuille inconnu.')
+  const environment = config.SCOLO_ENVIRONMENT ?? (config.SCOLO_WALLET_MODE === 'local' ? 'local' : 'prod')
+  if (!['local', 'dev', 'prod'].includes(environment)) throw new Error('Environnement Scolo inconnu.')
+  return environment
+}
 
 /** @param {string} hostname */
 function isPublicHostname(hostname) {
@@ -49,12 +60,12 @@ export function applicationOrigin(config) {
   if (url.username || url.password || url.pathname !== '/' || url.search || url.hash) {
     throw new Error('APP_URL doit contenir uniquement l’origine de l’application.')
   }
-  if (config.SCOLO_WALLET_MODE === 'local') {
+  if (applicationEnvironment(config) === 'local') {
     if (!['http:', 'https:'].includes(url.protocol) || !loopbackNames.has(url.hostname)) {
       throw new Error('Le mode local exige une origine localhost.')
     }
-  } else if (config.SCOLO_WALLET_MODE !== 'scolo' || url.protocol !== 'https:' || !isPublicHostname(url.hostname)) {
-    throw new Error('Le mode Scolo exige une origine publique HTTPS.')
+  } else if (url.protocol !== 'https:' || !isPublicHostname(url.hostname)) {
+    throw new Error('Les environnements DEV et PROD exigent une origine publique HTTPS.')
   }
   return url.origin
 }
@@ -62,20 +73,20 @@ export function applicationOrigin(config) {
 /** @param {PointSyncConfiguration} config */
 export function pointSyncConfiguration(config) {
   if (config.SCOLO_ZIKAK_SYNC_ENABLED !== 'true') return null
-  // This rollout explicitly authorises DEV only. Public Scolo remains disconnected.
-  if (config.SCOLO_WALLET_MODE !== 'local') throw new Error('La synchronisation Zikak V1 est limitée au DEV local.')
+  const environment = applicationEnvironment(config)
   let origin
   try { origin = new URL(config.ZIKAK_API_ORIGIN ?? '') } catch { throw new Error('Origine Zikak DEV requise.') }
-  const local = loopbackNames.has(origin.hostname) && origin.protocol === 'http:'
+  const local = environment === 'local' && loopbackNames.has(origin.hostname) && origin.protocol === 'http:'
   if ((!local && origin.origin !== 'https://api-zikak-dev.marvinl.com') ||
     origin.username || origin.password || origin.pathname !== '/' || origin.search || origin.hash) {
     throw new Error('La synchronisation exige l’origine Zikak DEV ou un serveur de test local.')
   }
   const applicationId = config.ZIKAK_APPLICATION_ID
   const token = config.ZIKAK_INTEGRATION_TOKEN
-  if (!applicationId || !token || !/^scolo-dev(?:-[a-z0-9-]+)?$/.test(applicationId) ||
+  const expectedApplication = environment === 'prod' ? 'scolo-prod' : environment === 'dev' ? 'scolo-dev' : 'scolo-dev-local'
+  if (!applicationId || !token || applicationId !== expectedApplication ||
     !/^[A-Za-z0-9_-]{32,128}$/.test(token)) {
-    throw new Error('Une application Scolo DEV et son credential dédié sont requis.')
+    throw new Error('Une source Zikak et son credential dédiés à cet environnement Scolo sont requis.')
   }
   return { origin: origin.origin, applicationId, token }
 }
@@ -85,12 +96,15 @@ export function assertDeploymentConfiguration(config) {
   assertDatabaseConfiguration(config)
   applicationOrigin(config)
   pointSyncConfiguration(config)
-  const kind = config.SCOLO_WALLET_MODE === 'local' ? 'test' : 'live'
+  const environment = applicationEnvironment(config)
+  if (environment === 'prod' && config.SCOLO_WALLET_MODE !== 'scolo') throw new Error('PROD exige le portefeuille Scolo persistant Turso.')
+  if (environment === 'local' && config.SCOLO_WALLET_MODE !== 'local') throw new Error('Le local exige une base SQLite de test.')
+  const kind = environment === 'prod' ? 'live' : 'test'
   if (!config.CLERK_SECRET_KEY.startsWith(`sk_${kind}_`) ||
     !config.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.startsWith(`pk_${kind}_`)) {
     throw new Error(`Le mode ${config.SCOLO_WALLET_MODE} exige les clés Clerk ${kind === 'test' ? 'Development' : 'Production'} correspondantes.`)
   }
-  if (config.SCOLO_TWEETS_ENABLED === 'true' && (config.SCOLO_WALLET_MODE !== 'scolo' ||
+  if (config.SCOLO_TWEETS_ENABLED === 'true' && (environment !== 'prod' || config.SCOLO_WALLET_MODE !== 'scolo' ||
     ![config.TWITTER_API_KEY, config.TWITTER_API_SECRET, config.TWITTER_ACCESS_TOKEN, config.TWITTER_ACCESS_SECRET].every(value => value?.trim()))) {
     throw new Error('La publication X exige le mode Scolo et ses quatre identifiants de publication serveur.')
   }
@@ -101,7 +115,7 @@ export function isAllowedApplicationHost(host, config) {
   if (!host || /[\s/@\\?#]/.test(host)) return false
   try {
     const expected = new URL(applicationOrigin(config))
-    return config.SCOLO_WALLET_MODE === 'local' ? isLoopbackHost(host) : host === expected.host
+    return applicationEnvironment(config) === 'local' ? isLoopbackHost(host) : host === expected.host
   } catch { return false }
 }
 

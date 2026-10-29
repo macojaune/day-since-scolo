@@ -2,12 +2,16 @@
 
 La V1 DEV synchronise désormais les mouvements à la déclaration d’une nouvelle
 apparition, sans appel Zikak à chaque pari. Elle est désactivée par défaut et
-limitée au DEV local. Voir [le contrat et l’exploitation V1](zikak-settlement-sync-v1.md).
+activée sur le service DEV avec sa propre source. Le local reste un outil de
+développement rapide, avec envois désactivés par défaut. Voir
+[le contrat et l’exploitation V1](zikak-settlement-sync-v1.md).
 Les réservations centrales décrites ci-dessous sont la cible ultérieure.
 
 Scolo prépare deux modes : des points de test locaux en DEV, et des Zikak
 persistants propres à Scolo en PROD. Le futur portefeuille global n’est pas
-encore raccordé. Voir [la préparation de production](production-preparation.md)
+pas encore utilisé pour dépenser dans le jeu. Les mouvements sont répliqués après
+rapprochement d'identité ; le solde global n'est pas importé dans le portefeuille
+de paris. Voir [la préparation de production](production-preparation.md)
 pour la migration et le rapprochement ultérieur.
 
 Le [plan de raccordement au moteur Zikak](zikak-integration-plan.md) reprend
@@ -44,7 +48,9 @@ Clerk de plusieurs applications comme une identité universelle.
   services. Une transaction SQLite dans Scolo ne couvre pas un service distant.
 - Produire une correction par écritures compensatoires, sans réécrire le journal.
 
-Le mode `SCOLO_WALLET_MODE=local` refuse toute base distante et tout hôte public.
+Le mode `SCOLO_WALLET_MODE=local` refuse toute base distante. L'environnement
+`local` impose un hôte loopback ; `dev` permet le domaine HTTPS du service DEV
+avec sa propre base SQLite persistante et Clerk Development.
 Le mode `scolo` prépare un portefeuille dédié dans Turso avec migration explicite,
 origine HTTPS exacte et clés Clerk Production. Il ne contacte pas le service global. `NODE_ENV=production` reste compatible avec un
 build et un démarrage de vérification sur la machine locale.

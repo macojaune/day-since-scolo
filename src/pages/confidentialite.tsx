@@ -19,8 +19,9 @@ export default function PrivacyPage() {
             données, écris à <a href="mailto:hello@macojaune.com">hello@macojaune.com</a>.
           </p>
           <p>
-            Tu joues avec des Zikak fictifs, sans argent réel. Ton solde reste
-            propre à BÈT a milpat : il n’est pas partagé avec d’autres projets.
+            Tu joues avec des Zikak fictifs, sans argent réel. Le jeu conserve
+            ton solde pour les paris. Quand le raccordement à Zikak est activé,
+            les mouvements de points sont aussi transmis à ce moteur d’audience.
           </p>
         </header>
 
@@ -45,6 +46,24 @@ export default function PrivacyPage() {
             permettent de vérifier les opérations et d’éviter les doublons ou
             les abus. Ce traitement repose sur l’intérêt légitime de garder un
             jeu fiable et de résoudre les contestations.
+          </p>
+        </section>
+
+        <section aria-labelledby="privacy-zikak">
+          <h2 id="privacy-zikak">Retrouver ton profil dans Zikak</h2>
+          <p>
+            Quand ce raccordement est activé, le serveur transmet à Zikak ton
+            identifiant de joueur, ton pseudo et les adresses email de ton compte,
+            avec leur état de vérification indiqué par Clerk. Cela permet de
+            rechercher ton profil parmi les contacts déjà connus de Marvin avant
+            d’en créer un nouveau, puis d’y associer les mouvements de points.
+          </p>
+          <p>
+            Un email vérifié peut permettre une association exacte et unique.
+            Un pseudo seul ou des résultats contradictoires demandent une
+            validation manuelle. Tes emails et les profils proposés ne sont pas
+            publics. Les points en attente de rapprochement sont conservés.
+            Cette fonction ne te donne pas accès aux autres contacts de Zikak.
           </p>
         </section>
 
