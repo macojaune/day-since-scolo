@@ -37,4 +37,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 USER nextjs
 EXPOSE 3000
+# Probe the bound IPv4 listener with the configured Host accepted by middleware.
+# Node is present in the runtime; curl is not part of the Alpine image.
+HEALTHCHECK --interval=5s --timeout=5s --start-period=15s --retries=10 \
+  CMD node -e "require('node:http').get({hostname:'127.0.0.1',port:process.env.PORT||3000,path:'/',headers:{host:new URL(process.env.APP_URL).host}},r=>{r.resume();process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))"
 CMD ["node_modules/.bin/next", "start", "--hostname", "0.0.0.0", "-p", "3000"]
