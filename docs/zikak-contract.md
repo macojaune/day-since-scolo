@@ -5,6 +5,10 @@ persistants propres à Scolo en PROD. Le futur portefeuille global n’est pas
 encore raccordé. Voir [la préparation de production](production-preparation.md)
 pour la migration et le rapprochement ultérieur.
 
+Le [plan de raccordement au moteur Zikak](zikak-integration-plan.md) reprend
+le contrôle du code et du runtime du 29 octobre 2026 UTC, les limites de l’API
+actuelle et le contrat nécessaire avant d’activer le solde global.
+
 ## État du service global vérifié
 
 Le dépôt `macojaune/zikak`, branche `develop` à `a219a59e`, fournit des membres,
