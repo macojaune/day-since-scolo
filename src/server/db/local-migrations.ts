@@ -1,7 +1,8 @@
 import type { Client } from '@libsql/client'
 import { tweetOutboxSchema } from '../social/tweet-outbox'
+import { zikakOutboxSchema } from '../zikak/outbox'
 
-export const GAME_SCHEMA_VERSION = '2026-10-28-history-tweets-v1'
+export const GAME_SCHEMA_VERSION = '2026-10-29-zikak-outbox-v1'
 
 // Repeatable bootstrap. Historical auth, credits and bets are neither
 // rewritten nor considered spendable Zikak. CHECKs also protect direct SQL use.
@@ -75,6 +76,7 @@ const statements = [
   `CREATE TABLE IF NOT EXISTS scolo_local_meta (
     key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL
   )`,
+  ...zikakOutboxSchema,
 ]
 
 /** The dry-run lists tables from the same statements that the migration executes. */

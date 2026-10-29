@@ -1,4 +1,4 @@
-# Scolo
+# BÈT a milpat
 
 <!-- impeccable:product-schema 1 -->
 
@@ -32,6 +32,8 @@ La direction retenue par Marvin est **« L’original affiné »**. Le site expl
 - Le nouveau code reste local, sans livraison sur le domaine public. Les rencontres manquantes ont été reportées séparément en production. La préparation du schéma et du compte administrateur est distincte du lancement. La publication X est préparée mais désactivée ; aucun tweet réel n’est envoyé pendant les tests.
 
 ## Brand Commitments
+
+Le nom affiché devient « BÈT a milpat » : BÈT est dominant et « a milpat » reste petit. Le domaine scolo.marvinl.com et les identifiants techniques Scolo sont conservés.
 
 Conserver strictement les couleurs d’origine : fond noir, jaune #facc15, blanc et ambre. Marvin a explicitement refusé le changement de palette et demande une amélioration mesurée. Conserver « Jou san bèt a mil pat », sa traduction française, l’explication personnelle, le compteur et l’arme du jour. Le calendrier apporte le côté jeu sans masquer les informations historiques. Ton simple, familier et didactique. Les Zikak sont des points de jeu gratuits et fictifs ; une infobulle accessible l’explique au moment du choix de mise.
 

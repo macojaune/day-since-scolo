@@ -8,6 +8,7 @@ import PredictionGame from '~/components/PredictionGame'
 import ZikakLabel from '~/components/ZikakLabel'
 import type { PublicGame } from '~/server/game/types'
 import { api } from '~/utils/api'
+import { BRAND_NAME } from '~/utils/brand'
 import { trackGameEvent } from '~/utils/analytics'
 import { rememberDraftForSignIn } from '~/utils/game-draft'
 import {
@@ -62,7 +63,7 @@ export default function GamePage() {
   return (
     <div className="scolo-app">
       <Head>
-        <title>Scolo · Jou san bèt a mil pat</title>
+        <title>{BRAND_NAME} · Jou san bèt a mil pat</title>
         <meta
           name="description"
           content="Le compteur de jours sans scolopendre, le journal des rencontres et tes pronostics sur la prochaine apparition."
@@ -71,12 +72,13 @@ export default function GamePage() {
       </Head>
       {game.data?.isSimulated && <div className="sandbox-note">
         Bac à sable local · Apparitions de démonstration et Zikak de test ·
-        Aucun effet sur ton portefeuille global
+        Les points de cette version servent aux tests
       </div>}
       <div className="page-shell">
         <header className="site-header">
-          <Link className="wordmark" href="/" aria-label="Scolo, accueil">
-            scolo
+          <Link className="wordmark" href="/" aria-label={`${BRAND_NAME}, accueil`}>
+            <span className="wordmark-main">BÈT</span>
+            <span className="wordmark-suffix">a milpat</span>
           </Link>
           <nav aria-label="Navigation principale">
             <a href="#run">Le run</a>
@@ -182,18 +184,14 @@ export default function GamePage() {
           </main>
         )}
         <footer className="site-footer">
-          <p>
-            Créé dans la frustration par{' '}
-            <a href="https://marvinl.com">Marvin</a>.<br />
-            <span>
-              Une maison garantie sans scolo ?{' '}
-              <a href="https://t.me/macojaune">Je prends !</a>
-            </span>
+          <p className="footer-signature">
+            barricadé entre deux coups de digrain par{' '}
+            <a href="https://marvinl.com">MarvinL.com</a>
           </p>
-          <span>
-            Parie avec des points fictifs. Aucun argent réel.<br />
+          <p className="footer-details">
+            <span>Parie avec des points fictifs. Aucun argent réel.</span>
             <Link href="/confidentialite">Confidentialité</Link>
-          </span>
+          </p>
         </footer>
       </div>
     </div>
