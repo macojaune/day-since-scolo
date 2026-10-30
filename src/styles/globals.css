@@ -873,30 +873,21 @@ select {
   margin-top: 44px;
   border-top: 1px solid #38342a;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  text-align: center;
+  align-items: end;
+  justify-content: space-between;
+  gap: 32px;
   font-size: 0.7rem;
 }
 .site-footer a {
   color: #facc15;
-  text-underline-offset: 3px;
 }
-.scolo-app .site-footer .footer-signature {
-  max-width: 65ch;
-  margin: 0;
-  color: #fff;
-  font-size: 0.88rem;
-  line-height: 1.6;
-}
-.scolo-app .site-footer .footer-details {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px 16px;
-  margin: 0;
+.site-footer p span,
+.site-footer > span {
   color: #bcbcbc;
+}
+.site-footer > span {
+  max-width: 250px;
+  text-align: right;
   line-height: 1.6;
 }
 .loading-state {
@@ -1256,6 +1247,15 @@ select {
   }
   .game-rules > div {
     grid-template-columns: 1fr;
+  }
+  .site-footer {
+    display: block;
+  }
+  .site-footer > span {
+    display: block;
+    text-align: left;
+    max-width: none;
+    margin-top: 18px;
   }
 }
 @media (max-width: 380px) {

@@ -9,6 +9,7 @@ import ZikakLabel from '~/components/ZikakLabel'
 import type { PublicGame } from '~/server/game/types'
 import { api } from '~/utils/api'
 import { BRAND_NAME } from '~/utils/brand'
+import { SOCIAL_DESCRIPTION, SOCIAL_TITLE } from '~/utils/social-preview'
 import { trackGameEvent } from '~/utils/analytics'
 import { rememberDraftForSignIn } from '~/utils/game-draft'
 import {
@@ -63,10 +64,10 @@ export default function GamePage() {
   return (
     <div className="scolo-app">
       <Head>
-        <title>{BRAND_NAME} · Jou san bèt a mil pat</title>
+        <title>{`${SOCIAL_TITLE} · ${BRAND_NAME}`}</title>
         <meta
           name="description"
-          content="Le compteur de jours sans scolopendre, le journal des rencontres et tes pronostics sur la prochaine apparition."
+          content={SOCIAL_DESCRIPTION}
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
@@ -184,14 +185,18 @@ export default function GamePage() {
           </main>
         )}
         <footer className="site-footer">
-          <p className="footer-signature">
-            barricadé entre deux coups de digrain par{' '}
-            <a href="https://marvinl.com">MarvinL.com</a>
+          <p>
+            Créé dans la frustration par{' '}
+            <a href="https://marvinl.com">Marvin</a>.<br />
+            <span>
+              Une maison garantie sans scolo ?{' '}
+              <a href="https://t.me/macojaune">Je prends !</a>
+            </span>
           </p>
-          <p className="footer-details">
-            <span>Parie avec des points fictifs. Aucun argent réel.</span>
+          <span>
+            Parie avec des points fictifs. Aucun argent réel.<br />
             <Link href="/confidentialite">Confidentialité</Link>
-          </p>
+          </span>
         </footer>
       </div>
     </div>
