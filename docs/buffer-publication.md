@@ -160,3 +160,18 @@ Source du comptage : [Counting Characters, X](https://docs.x.com/fundamentals/co
 Validation de la mécanique de paliers : 108 tests passent, TypeScript et ESLint
 passent, et le build Next réussit. La connexion réelle à Buffer a été revérifiée
 en lecture seule. La publication automatique reste désactivée.
+
+
+## Promotion PROD ciblée
+
+La branche de promotion part de `main` et transporte uniquement les deux commits
+sociaux, avec les adaptations nécessaires au garde d’environnement et au
+bootstrap Turso. Elle n’ajoute aucune synchronisation Zikak, aucun job de points,
+ni les modifications d’affichage propres à DEV. Les fichiers d’interface de
+`main` restent inchangés.
+
+Cette variante passe 96 tests, TypeScript, ESLint et le build Next. La sauvegarde
+Turso PROD a été restaurée dans une SQLite locale ; toutes les tables sources
+correspondent à leurs empreintes. La migration a ensuite été appliquée deux fois
+sur cette copie, avec conservation des données et intégrité contrôlées. Les
+quatre tables sociales sont les seules nouvelles tables attendues.
