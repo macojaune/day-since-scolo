@@ -6,7 +6,9 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
  *
  * All routers added in /api/routers should be manually added here.
  */
+import { arcadeRouter } from './routers/arcade';
 export const mainRouter = createTRPCRouter({
+  arcade: arcadeRouter,
   app: appRouter,
 });
 
