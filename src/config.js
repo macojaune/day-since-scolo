@@ -1,9 +1,20 @@
 /** @typedef {'local' | 'scolo'} WalletMode */
+/** @typedef {'local' | 'dev' | 'prod'} ApplicationEnvironment */
+/** @typedef {{ SCOLO_WALLET_MODE: WalletMode, SCOLO_ENVIRONMENT?: ApplicationEnvironment }} EnvironmentConfiguration */
 /** @typedef {{ SCOLO_WALLET_MODE: WalletMode, DATABASE_URL: string, DATABASE_AUTH_TOKEN?: string }} DatabaseConfiguration */
-/** @typedef {{ SCOLO_WALLET_MODE: WalletMode, APP_URL: string }} ApplicationConfiguration */
-/** @typedef {{ SCOLO_TWEETS_ENABLED?: 'true' | 'false', TWITTER_API_KEY?: string, TWITTER_API_SECRET?: string, TWITTER_ACCESS_TOKEN?: string, TWITTER_ACCESS_SECRET?: string }} TweetConfiguration */
+/** @typedef {EnvironmentConfiguration & { APP_URL: string }} ApplicationConfiguration */
+/** @typedef {{ SCOLO_TWEETS_ENABLED?: 'true' | 'false', BUFFER_API_KEY?: string, BUFFER_CHANNEL_ID?: string }} TweetConfiguration */
 
 const loopbackNames = new Set(['localhost', '127.0.0.1', '[::1]'])
+
+/** Environment is independent from SQLite/Turso storage. Legacy configs keep their meaning.
+ * @param {EnvironmentConfiguration} config @returns {ApplicationEnvironment} */
+export function applicationEnvironment(config) {
+  if (!['local', 'scolo'].includes(config.SCOLO_WALLET_MODE)) throw new Error('Mode de portefeuille inconnu.')
+  const environment = config.SCOLO_ENVIRONMENT ?? (config.SCOLO_WALLET_MODE === 'local' ? 'local' : 'prod')
+  if (!['local', 'dev', 'prod'].includes(environment)) throw new Error('Environnement Scolo inconnu.')
+  return environment
+}
 
 /** @param {string} hostname */
 function isPublicHostname(hostname) {
@@ -48,12 +59,12 @@ export function applicationOrigin(config) {
   if (url.username || url.password || url.pathname !== '/' || url.search || url.hash) {
     throw new Error('APP_URL doit contenir uniquement l’origine de l’application.')
   }
-  if (config.SCOLO_WALLET_MODE === 'local') {
+  if (applicationEnvironment(config) === 'local') {
     if (!['http:', 'https:'].includes(url.protocol) || !loopbackNames.has(url.hostname)) {
       throw new Error('Le mode local exige une origine localhost.')
     }
-  } else if (config.SCOLO_WALLET_MODE !== 'scolo' || url.protocol !== 'https:' || !isPublicHostname(url.hostname)) {
-    throw new Error('Le mode Scolo exige une origine publique HTTPS.')
+  } else if (url.protocol !== 'https:' || !isPublicHostname(url.hostname)) {
+    throw new Error('Les environnements DEV et PROD exigent une origine publique HTTPS.')
   }
   return url.origin
 }
@@ -62,14 +73,17 @@ export function applicationOrigin(config) {
 export function assertDeploymentConfiguration(config) {
   assertDatabaseConfiguration(config)
   applicationOrigin(config)
-  const kind = config.SCOLO_WALLET_MODE === 'local' ? 'test' : 'live'
+  const environment = applicationEnvironment(config)
+  if (environment === 'prod' && config.SCOLO_WALLET_MODE !== 'scolo') throw new Error('PROD exige le portefeuille Scolo persistant Turso.')
+  if (environment === 'local' && config.SCOLO_WALLET_MODE !== 'local') throw new Error('Le local exige une base SQLite de test.')
+  const kind = environment === 'prod' ? 'live' : 'test'
   if (!config.CLERK_SECRET_KEY.startsWith(`sk_${kind}_`) ||
     !config.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.startsWith(`pk_${kind}_`)) {
     throw new Error(`Le mode ${config.SCOLO_WALLET_MODE} exige les clés Clerk ${kind === 'test' ? 'Development' : 'Production'} correspondantes.`)
   }
-  if (config.SCOLO_TWEETS_ENABLED === 'true' && (config.SCOLO_WALLET_MODE !== 'scolo' ||
-    ![config.TWITTER_API_KEY, config.TWITTER_API_SECRET, config.TWITTER_ACCESS_TOKEN, config.TWITTER_ACCESS_SECRET].every(value => value?.trim()))) {
-    throw new Error('La publication X exige le mode Scolo et ses quatre identifiants de publication serveur.')
+  if (config.SCOLO_TWEETS_ENABLED === 'true' && (environment !== 'prod' || config.SCOLO_WALLET_MODE !== 'scolo' ||
+    ![config.BUFFER_API_KEY, config.BUFFER_CHANNEL_ID].every(value => value && !/\s/.test(value)))) {
+    throw new Error('La publication X via Buffer exige PROD, le portefeuille Scolo, BUFFER_API_KEY et BUFFER_CHANNEL_ID côté serveur.')
   }
 }
 
@@ -78,7 +92,7 @@ export function isAllowedApplicationHost(host, config) {
   if (!host || /[\s/@\\?#]/.test(host)) return false
   try {
     const expected = new URL(applicationOrigin(config))
-    return config.SCOLO_WALLET_MODE === 'local' ? isLoopbackHost(host) : host === expected.host
+    return applicationEnvironment(config) === 'local' ? isLoopbackHost(host) : host === expected.host
   } catch { return false }
 }
 
