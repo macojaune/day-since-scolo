@@ -1,3 +1,4 @@
+import { validTweet } from './tweet-text'
 import { TweetPublicationError } from './publication-error'
 
 export interface BufferConfiguration { apiKey: string; channelId: string }
@@ -82,7 +83,7 @@ export function createBufferPublisher(config: BufferConfiguration, options: { fe
   return {
     checkChannel,
     async publish(text: string): Promise<BufferPost> {
-      if (!text.trim() || Array.from(text).length > 280) throw new TweetPublicationError('failed', 'BUFFER_INVALID_TEXT')
+      if (!validTweet(text)) throw new TweetPublicationError('failed', 'BUFFER_INVALID_TEXT')
       // Check the configured destination before each creation. A wrong network must never receive a post.
       try { await checkChannel() } catch (error) {
         throw new TweetPublicationError('failed', error instanceof TweetPublicationError ? error.code : 'BUFFER_CHANNEL_UNAVAILABLE')

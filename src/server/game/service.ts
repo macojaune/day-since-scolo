@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import type { Client, InArgs, Row, Transaction } from '@libsql/client'
 import { GAME_SCHEMA_VERSION, migrateLocalDatabase } from '../db/local-migrations'
 import { enqueueAppearanceTweet } from '../social/tweet-outbox'
+import { enqueueParticipationTweet } from '../social/participation-tweets'
 import { calculateReplayBonuses, calculateSettlement, gameDayStart, safeTotal, type SettlementTicket } from './settlement'
 import { ensurePlayerInTransaction } from './player'
 import {
@@ -208,6 +209,7 @@ export class GameService {
         "INSERT INTO scolo_predictions (id, player_id, round_id, predicted_at, stake, created_at, idempotency_key, status, payout) VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 0) RETURNING *",
         [id, playerId, input.roundId, predictedAt, input.stake, now, input.idempotencyKey]))[0]!
       await this.ledger(transaction, playerId, -input.stake, 'reserve', `prediction:${id}`, now)
+      await enqueueParticipationTweet(transaction, input.roundId, now, this.tweetEnabled, playerId)
       return { prediction: prediction(inserted), balance: Number(debited[0]!.balance) }
     })
   }
@@ -309,14 +311,26 @@ export class GameService {
       await transaction.execute({ sql: "UPDATE scolo_rounds SET status = 'settled', closed_at = ? WHERE id = ? AND status = 'open'", args: [now, input.roundId] })
       const nextRoundId = this.newId()
       await transaction.execute({ sql: "INSERT INTO scolo_rounds (id, opened_at, status) VALUES (?, ?, 'open')", args: [nextRoundId, now] })
+      const previousAppearance = (await query(transaction, 'SELECT MAX(created_at) AS occurred_at FROM "scolo-data" WHERE created_at <= ?', [Math.floor(input.observedAt.getTime() / 1000)]))[0]!
       const appearance = (await query(transaction, 'INSERT INTO "scolo-data" (created_at, tool) VALUES (?, ?) RETURNING id', [Math.floor(input.observedAt.getTime() / 1000), input.tool]))[0]!
       await transaction.execute({
         sql: 'INSERT INTO scolo_settlements (round_id, observed_at, tool, declared_at, pot, total_refunded, winning_distance_ms, next_round_id, appearance_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
         args: [input.roundId, input.observedAt.getTime(), input.tool, now, result.pot, result.totalRefunded, result.winningDistanceMs, nextRoundId, Number(appearance.id)],
       })
+      const winners = new Map<string, { name: string; amount: number }>()
+      for (const entry of result.entries.filter(entry => entry.outcome === 'won')) {
+        const ticket = byId.get(entry.predictionId)!
+        const winner = winners.get(ticket.playerId) ?? { name: ticket.playerName, amount: 0 }
+        winner.amount = safeTotal([winner.amount, entry.payout])
+        winners.set(ticket.playerId, winner)
+      }
       await enqueueAppearanceTweet(transaction, {
         appearanceId: Number(appearance.id), observedAt: input.observedAt, tool: input.tool, createdAt: now,
+        previousAppearanceAt: previousAppearance.occurred_at === null ? null : Number(previousAppearance.occurred_at) * 1000,
+        winners: [...winners.values()], totalRefunded: result.totalRefunded,
       }, this.tweetEnabled)
+      await transaction.execute({ sql: "UPDATE scolo_participation_tweets SET status='skipped',error_code='ROUND_CLOSED' WHERE round_id=? AND status='pending'", args: [input.roundId] })
+
       return { ...result, nextRoundId, appearanceId: Number(appearance.id) }
     })
   }
