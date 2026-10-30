@@ -3,7 +3,8 @@ import { env } from '../../env.js'
 import { applicationEnvironment } from '../../config.js'
 import { getDatabaseClient } from '../db'
 import { createBufferPublisher } from './buffer'
-import { dispatchBufferAppearance, reconcileBufferPosts } from './buffer-outbox'
+import { nextParticipationTweet } from './participation-tweets'
+import { dispatchBufferAppearance, dispatchBufferParticipation, reconcileBufferPosts } from './buffer-outbox'
 
 type Worker = { stop: () => void; key: string }
 const globalForTweets = globalThis as unknown as { scoloTweetWorkers?: WeakMap<Client, Worker> }
@@ -34,6 +35,8 @@ export function startAppearancePublicationWorker(client: Client) {
       // One pending announcement per pass. Never retries failed, sending or unknown creates.
       const pending = (await client.execute("SELECT appearance_id FROM scolo_tweet_outbox WHERE status = 'pending' ORDER BY created_at LIMIT 1")).rows[0]
       if (pending && !stopped) await dispatchBufferAppearance(client, Number(pending.appearance_id), { enabled: true, publisher, config })
+      const participationId = stopped ? null : await nextParticipationTweet(client)
+      if (participationId && !stopped) await dispatchBufferParticipation(client, participationId, { enabled: true, publisher, config })
     } catch { console.warn('Scolo: suivi Buffer indisponible, vérifier la file de publication.') }
     finally { running = false }
   }

@@ -1,10 +1,11 @@
 import type { Client } from '@libsql/client'
-import { bufferPostsSchema } from '../social/buffer-outbox'
+import { participationSchema } from '../social/participation-tweets'
+import { bufferPostsSchema, participationBufferPostsSchema } from '../social/buffer-outbox'
 import { tweetOutboxSchema } from '../social/tweet-outbox'
 import { zikakOutboxSchema } from '../zikak/outbox'
 import { pointJobsSchema } from '../zikak/jobs'
 
-export const GAME_SCHEMA_VERSION = '2026-10-30-buffer-publication-v3'
+export const GAME_SCHEMA_VERSION = '2026-10-30-social-milestones-v4'
 
 // Repeatable bootstrap. Historical auth, credits and bets are neither
 // rewritten nor considered spendable Zikak. CHECKs also protect direct SQL use.
@@ -81,6 +82,8 @@ const statements = [
   )`,
   ...zikakOutboxSchema,
   ...pointJobsSchema,
+  ...participationSchema,
+  participationBufferPostsSchema,
 ]
 
 /** The dry-run lists tables from the same statements that the migration executes. */

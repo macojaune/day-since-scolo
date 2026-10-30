@@ -120,3 +120,18 @@ test('CLI defaults to read-only and requires an explicit valid identity before w
   assert.throws(() => execFileSync(process.execPath, ['--import', import.meta.resolve('tsx'), script, '--apply', '--admin-clerk-id', 'not-a-clerk-id', '--admin-name', 'Admin'], { env: environment, stdio: 'pipe' }))
   assert.equal((await client.execute("SELECT COUNT(*) AS n FROM sqlite_master WHERE name = 'scolo_players'")).rows[0]!.n, 0)
 })
+
+test('social milestone migration preserves pending progress, receipts and existing messages on repeat', async t => {
+  const { client } = await fixture(t)
+  await prepareGameDatabase(client, { apply: true })
+  await client.execute("INSERT INTO scolo_rounds VALUES ('synthetic-social-round',100,'open',NULL)")
+  await client.execute("INSERT INTO scolo_participation_progress VALUES ('synthetic-social-round',25,50)")
+  await client.execute("INSERT INTO scolo_participation_tweets (id,round_id,content,status,created_at,attempted_at) VALUES ('synthetic-message','synthetic-social-round','Original message','sending',100,101)")
+  await client.execute("INSERT INTO scolo_participation_buffer_posts VALUES ('synthetic-message','synthetic-provider-post','synthetic-channel',102,3)")
+  const names = ['scolo_participation_progress', 'scolo_participation_tweets', 'scolo_participation_buffer_posts']
+  const before = await Promise.all(names.map(name => client.execute(`SELECT * FROM ${name}`)))
+  await prepareGameDatabase(client, { apply: true })
+  await prepareGameDatabase(client, { apply: true })
+  for (let i = 0; i < names.length; i++) assert.deepEqual((await client.execute(`SELECT * FROM ${names[i]}`)).rows, before[i]!.rows)
+  assert.equal((await client.execute('PRAGMA foreign_key_check')).rows.length, 0)
+})
