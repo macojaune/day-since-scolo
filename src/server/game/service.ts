@@ -19,7 +19,7 @@ import {
   type SettlementResult,
 } from './types'
 
-interface ClockOptions { now?: () => Date; id?: () => string; walletMode?: WalletMode; tweetEnabled?: boolean }
+interface ClockOptions { now?: () => Date; id?: () => string; walletMode?: WalletMode; environment?: 'local' | 'dev' | 'prod'; tweetEnabled?: boolean }
 type Connection = Pick<Client, 'execute'> | Transaction
 const queues = new WeakMap<Client, Promise<unknown>>()
 
@@ -57,7 +57,7 @@ export class GameService {
     this.clock = options.now ?? (() => new Date())
     this.newId = options.id ?? randomUUID
     this.walletMode = options.walletMode ?? 'local'
-    this.tweetEnabled = this.walletMode === 'scolo' && options.tweetEnabled === true
+    this.tweetEnabled = (options.environment ?? (this.walletMode === 'scolo' ? 'prod' : 'local')) === 'prod' && this.walletMode === 'scolo' && options.tweetEnabled === true
   }
 
   async initialize() {

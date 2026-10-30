@@ -28,6 +28,18 @@ const publicConfig = {
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_live_test-only',
 }
 
+test('DEV is a hosted service with Clerk Development and its own storage', () => {
+  const dev = { ...local, SCOLO_ENVIRONMENT: 'dev' as const, APP_URL: 'https://scolo-dev.example.com', DATABASE_URL: 'file:/data/scolo-dev.db' }
+  assert.doesNotThrow(() => assertDeploymentConfiguration(dev))
+  assert.equal(applicationOrigin(dev), 'https://scolo-dev.example.com')
+  assert.equal(isAllowedApplicationHost('scolo-dev.example.com', dev), true)
+  assert.equal(isAllowedApplicationHost('localhost:3092', dev), false)
+  assert.throws(() => assertDeploymentConfiguration({ ...dev, CLERK_SECRET_KEY: 'sk_live_test-only' }))
+  assert.throws(() => assertDeploymentConfiguration({ ...dev, SCOLO_TWEETS_ENABLED: 'true' }))
+  assert.throws(() => assertDeploymentConfiguration({ ...dev, APP_URL: local.APP_URL }))
+  assert.throws(() => assertDeploymentConfiguration({ ...dev, SCOLO_ENVIRONMENT: 'prod' }))
+})
+
 test('local and public Scolo configurations stay isolated, including Clerk key kind', () => {
   assert.doesNotThrow(() => assertDeploymentConfiguration(local))
   assert.doesNotThrow(() => assertDeploymentConfiguration(publicConfig))
@@ -57,7 +69,7 @@ test('database addresses reject ambiguous paths, plaintext endpoints and credent
 })
 
 test('tweet publication stays disabled locally and requires all publication credentials', () => {
-  const credentials = { TWITTER_API_KEY: 'test-only', TWITTER_API_SECRET: 'test-only', TWITTER_ACCESS_TOKEN: 'test-only', TWITTER_ACCESS_SECRET: 'test-only' }
+  const credentials = { BUFFER_API_KEY: 'test-only', BUFFER_CHANNEL_ID: 'channel-test-only' }
   assert.doesNotThrow(() => assertDeploymentConfiguration({ ...publicConfig, SCOLO_TWEETS_ENABLED: 'false' }))
   assert.doesNotThrow(() => assertDeploymentConfiguration({ ...publicConfig, ...credentials, SCOLO_TWEETS_ENABLED: 'true' }))
   assert.throws(() => assertDeploymentConfiguration({ ...local, ...credentials, SCOLO_TWEETS_ENABLED: 'true' }))

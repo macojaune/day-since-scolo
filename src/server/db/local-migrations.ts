@@ -1,7 +1,8 @@
 import type { Client } from '@libsql/client'
+import { bufferPostsSchema } from '../social/buffer-outbox'
 import { tweetOutboxSchema } from '../social/tweet-outbox'
 
-export const GAME_SCHEMA_VERSION = '2026-10-28-history-tweets-v1'
+export const GAME_SCHEMA_VERSION = '2026-10-30-buffer-publication-v3'
 
 // Repeatable bootstrap. Historical auth, credits and bets are neither
 // rewritten nor considered spendable Zikak. CHECKs also protect direct SQL use.
@@ -15,6 +16,7 @@ const walletEntriesDefinition = `(
 )`
 const statements = [
   tweetOutboxSchema,
+  bufferPostsSchema,
   `CREATE TABLE IF NOT EXISTS scolo_schema_migrations (
     version TEXT PRIMARY KEY NOT NULL, applied_at INTEGER NOT NULL
   )`,
@@ -87,7 +89,7 @@ export const GAME_SCHEMA_TABLES = Object.freeze(statements.flatMap(statement => 
 export async function migrateGameDatabase(client: Client) {
   await client.execute('PRAGMA foreign_keys = ON')
   // busy_timeout is a local SQLite setting and is rejected by Turso's HTTP API.
-  if (client.protocol === 'file') await client.execute('PRAGMA busy_timeout = 5000')
+  if (client.protocol === 'file') if (client.protocol === 'file') await client.execute('PRAGMA busy_timeout = 5000')
   const transaction = await client.transaction('write')
   try {
     for (const statement of statements) await transaction.execute(statement)
