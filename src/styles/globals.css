@@ -133,10 +133,25 @@ select {
   gap: 36px;
 }
 .wordmark {
-  font-size: 1.55rem;
-  font-weight: 750;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  flex-shrink: 0;
   letter-spacing: -0.04em;
   text-decoration: none;
+}
+.wordmark-main {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 850;
+  line-height: 1;
+}
+.wordmark-suffix {
+  color: #facc15;
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 .site-header nav {
   display: flex;

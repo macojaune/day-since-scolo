@@ -5,22 +5,22 @@ export default function PrivacyPage() {
   return (
     <div className="scolo-app">
       <Head>
-        <title>Confidentialité · Scolo</title>
-        <meta name="description" content="Les données utilisées par Scolo, ce qui est public et comment exercer tes droits." />
+        <title>Confidentialité · BÈT a milpat</title>
+        <meta name="description" content="Les données utilisées par BÈT a milpat, ce qui est public et comment exercer tes droits." />
       </Head>
       <main className="privacy-page">
-        <Link href="/" className="button">← Retour à Scolo</Link>
+        <Link href="/" className="button">← Retour à BÈT a milpat</Link>
         <header>
           <p className="privacy-date">Politique de confidentialité · 28 octobre 2026</p>
-          <h1>Tes données sur Scolo</h1>
+          <h1>Tes données sur BÈT a milpat</h1>
           <p>
-            Scolo est le jeu de pronostics de Marvin (macojaune), responsable
+            BÈT a milpat est le jeu de pronostics de Marvin (macojaune), responsable
             des données du site. Pour toute question ou demande concernant tes
             données, écris à <a href="mailto:hello@macojaune.com">hello@macojaune.com</a>.
           </p>
           <p>
             Tu joues avec des Zikak fictifs, sans argent réel. Ton solde reste
-            propre à Scolo : il n’est pas partagé avec d’autres projets.
+            propre à BÈT a milpat : il n’est pas partagé avec d’autres projets.
           </p>
         </header>
 
@@ -31,10 +31,10 @@ export default function PrivacyPage() {
             pseudo. Clerk gère la connexion et les informations de ton compte.
             Si tu choisis Google, Google transmet à Clerk ton identifiant, ton
             email et les informations de ton profil, comme ton nom et ta photo.
-            Scolo ne demande pas l’accès à tes emails, tes contacts ou tes fichiers Google.
+            BÈT a milpat ne demande pas l’accès à tes emails, tes contacts ou tes fichiers Google.
           </p>
           <p>
-            Scolo enregistre l’identifiant de ton compte, ton pseudo, tes dates
+            BÈT a milpat enregistre l’identifiant de ton compte, ton pseudo, tes dates
             jouées, tes mises, l’instant de leur validation, leurs résultats et
             les mouvements de ton solde. Ces données servent à enregistrer tes
             paris et calculer les gains : c’est l’exécution du service de jeu
@@ -85,7 +85,7 @@ export default function PrivacyPage() {
             pour te connecter, de{' '}
             <a href="https://policies.google.com/privacy?hl=fr">Google</a>.
             Pour obtenir des précisions sur les prestataires et les garanties
-            applicables à tes données Scolo, utilise le contact indiqué plus haut.
+            applicables à tes données BÈT a milpat, utilise le contact indiqué plus haut.
           </p>
         </section>
 
@@ -121,7 +121,7 @@ export default function PrivacyPage() {
             référence qui évite de confirmer deux fois le même pari.
           </p>
           <p>
-            Scolo n’intègre pas de publicité ni d’outil de suivi marketing.
+            BÈT a milpat n’intègre pas de publicité ni d’outil de suivi marketing.
             Tu peux effacer les cookies et les données du site depuis ton
             navigateur ; cela peut te déconnecter et supprimer ton brouillon.
             Tes paris déjà validés restent enregistrés dans le jeu.
@@ -145,7 +145,7 @@ export default function PrivacyPage() {
             <a href="mailto:hello@macojaune.com">hello@macojaune.com</a> : la demande
             est traitée manuellement, pour prendre en compte à la fois le compte
             de connexion et les données du jeu. Supprimer seulement ton compte
-            de connexion n’efface pas automatiquement l’historique Scolo.
+            de connexion n’efface pas automatiquement l’historique BÈT a milpat.
           </p>
           <p>
             Si tu utilisais l’ancienne version du site, des informations de

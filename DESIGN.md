@@ -1,5 +1,5 @@
 ---
-name: Scolo
+name: BÈT a milpat
 description: L’original affiné, les observations d’abord et le jeu ensuite.
 colors:
   noir: "#000000"
@@ -93,6 +93,8 @@ Le noir est le fond général. Le jaune porte le titre, les sélections, les don
 
 Geist reste la famille de l’application, via l’import existant `geist/font/sans`. Le titre garde une taille forte et les nombres utilisent des chiffres tabulaires. Aucune nouvelle police n’est introduite ; Barlow et Bricolage des explorations rejetées ne font pas partie de cette direction.
 
+Le mot-symbole place « BÈT » en blanc à 2 rem, graisse 850, avec « a milpat » jaune à 0.78 rem, graisse 650, aligné sur la ligne de base. La signature du footer est centrée, blanche et à 0.88 rem ; les mentions secondaires sont regroupées dessous.
+
 Les rôles réutilisables sont le titre principal, les titres de section, le corps et les contrôles. Le titre du jeu atteint 2.65 rem ; la date sélectionnée 1.2 rem. La cagnotte est renforcée par une graisse et une visibilité supérieures. Le compteur adapte ses chiffres longs et sa taille aux petits écrans, sans supprimer d’unité.
 
 **The Nombres lisibles Rule.** Durées, dates et montants utilisent des chiffres tabulaires ; les points restent accompagnés du libellé Zikak.
@@ -121,7 +123,7 @@ Compteur et boutons arrondis à 6 px ; calendrier à 12 px ; zone de mise à ang
 - Le compteur conserve jours, heures, minutes et secondes. Sans apparition connue, il affiche un état explicite plutôt qu’une durée inventée.
 - La dernière rencontre conserve sa date, son heure et l’image de son arme. Les fichiers `public/sandale.png`, `public/coutelas.png`, `public/digrain.png` et `public/capes.png` proviennent du dépôt existant ; aucun asset n’est généré ou emprunté aux références de conception.
 - L’historique est une liste centrée de 720 px maximum, avec 8 rencontres par page. Les contrôles « Précédent », « Suivant » et « Page N sur M » apparaissent uniquement au-delà de 8 entrées. La date, le moyen de défense et l’écart avec la rencontre précédente restent visibles ; cet écart est calculé avant pagination. Aucun filtre ni graphique.
-- Le logo affiche « scolo » sans point jaune. La navigation relie « Le run », « Les rencontres » et « Le jeu » à leurs ancres. Les liens deviennent jaunes et soulignés au survol. Le bouton de connexion est transparent avec une bordure ; après connexion, le solde jaune et son libellé accompagnent le contrôle Clerk.
+- Le mot-symbole affiche « BÈT » en fort et « a milpat » en petit, sans point jaune. Le footer commence par « barricadé entre deux coups de digrain par MarvinL.com », centré, avec un lien vers https://marvinl.com. La mention de points fictifs et le lien de confidentialité restent en dessous. La navigation relie « Le run », « Les rencontres » et « Le jeu » à leurs ancres. Les liens deviennent jaunes et soulignés au survol. Le bouton de connexion est transparent avec une bordure ; après connexion, le solde jaune et son libellé accompagnent le contrôle Clerk.
 - Les instructions suivent l’action réelle : choisir sa date, choisir sa mise, se connecter pour confirmer. Le calendrier montre 28 jours ; ses flèches naviguent par fenêtres et un raccourci ramène à aujourd’hui. Le jour courant porte « Aujourd’hui » et une bordure jaune. Les cases occupées montrent le nombre de paris et la cote du jour ; la sélection devient jaune. Une pastille blanche à texte noir « Ton pari » ou « Tes paris » distingue les dates du joueur. Une date passée sans pari est désactivée.
 - La zone jaune intégrée sous la grille affiche la date sélectionnée, le nombre de paris et les points déjà misés, en gras. Pour une date jouable et un solde positif, elle reçoit une mise entière ajustable uniquement avec moins/plus : le montant est un output, pas un champ de saisie. Le solde après cette mise est visible, avec le versement estimé et une confirmation noire. Aucun champ d’heure ni raccourci de mise prédéfinie. Le versement est introduit par « Si ton pari gagne, tu reçois », puis « Estimation, mise comprise ». Il inclut la mise et la cote reste variable ; le brouillon conserve la date et la mise pendant la connexion quand le stockage de session est disponible.
 - À solde zéro, une bannière blanche et noire très visible précède les dates. Elle explique que les paris existants restent en jeu et propose de les consulter ; le formulaire de mise est masqué.

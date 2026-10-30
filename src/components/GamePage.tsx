@@ -8,6 +8,8 @@ import PredictionGame from '~/components/PredictionGame'
 import ZikakLabel from '~/components/ZikakLabel'
 import type { PublicGame } from '~/server/game/types'
 import { api } from '~/utils/api'
+import { BRAND_NAME } from '~/utils/brand'
+import { SOCIAL_DESCRIPTION, SOCIAL_TITLE } from '~/utils/social-preview'
 import { trackGameEvent } from '~/utils/analytics'
 import { rememberDraftForSignIn } from '~/utils/game-draft'
 import {
@@ -62,10 +64,10 @@ export default function GamePage() {
   return (
     <div className="scolo-app">
       <Head>
-        <title>Scolo · Jou san bèt a mil pat</title>
+        <title>{`${SOCIAL_TITLE} · ${BRAND_NAME}`}</title>
         <meta
           name="description"
-          content="Le compteur de jours sans scolopendre, le journal des rencontres et tes pronostics sur la prochaine apparition."
+          content={SOCIAL_DESCRIPTION}
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
@@ -75,8 +77,9 @@ export default function GamePage() {
       </div>}
       <div className="page-shell">
         <header className="site-header">
-          <Link className="wordmark" href="/" aria-label="Scolo, accueil">
-            scolo
+          <Link className="wordmark" href="/" aria-label={`${BRAND_NAME}, accueil`}>
+            <span className="wordmark-main">BÈT</span>
+            <span className="wordmark-suffix">a milpat</span>
           </Link>
           <nav aria-label="Navigation principale">
             <a href="#run">Le run</a>
