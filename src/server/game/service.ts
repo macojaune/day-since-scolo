@@ -1,3 +1,4 @@
+import { databaseWrite } from '../db/write'
 import { randomUUID } from 'node:crypto'
 import type { Client, InArgs, Row, Transaction } from '@libsql/client'
 import { GAME_SCHEMA_VERSION, migrateLocalDatabase } from '../db/local-migrations'
@@ -24,7 +25,6 @@ import {
 
 interface ClockOptions { now?: () => Date; id?: () => string; walletMode?: WalletMode; environment?: ApplicationEnvironment; tweetEnabled?: boolean; zikakApplicationId?: string }
 type Connection = Pick<Client, 'execute'> | Transaction
-const queues = new WeakMap<Client, Promise<unknown>>()
 
 function iso(value: unknown) { return new Date(Number(value)).toISOString() }
 function inputDate(value: Date, label: string) {
@@ -97,22 +97,7 @@ export class GameService {
   }
 
   private async write<T>(operation: (transaction: Transaction) => Promise<T>): Promise<T> {
-    const run = async () => {
-      const transaction = await this.client.transaction('write')
-      try {
-        const result = await operation(transaction)
-        await transaction.commit()
-        return result
-      } catch (error) {
-        await transaction.rollback()
-        throw error
-      } finally {
-        transaction.close()
-      }
-    }
-    const pending = (queues.get(this.client) ?? Promise.resolve()).then(run, run)
-    queues.set(this.client, pending.catch(() => undefined))
-    return pending
+    return databaseWrite(this.client, operation)
   }
 
   private async read<T>(operation: (transaction: Transaction) => Promise<T>): Promise<T> {

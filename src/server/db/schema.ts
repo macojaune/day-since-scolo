@@ -180,7 +180,7 @@ export const scoloWalletEntries = sqliteTable('scolo_wallet_entries', {
   id: text('id').primaryKey(),
   playerId: text('player_id').notNull().references(() => scoloPlayers.id),
   amount: integer('amount').notNull(),
-  kind: text('kind', { enum: ['welcome', 'reserve', 'payout', 'refund', 'fixture', 'round_bonus'] }).notNull(),
+  kind: text('kind', { enum: ['welcome', 'reserve', 'payout', 'refund', 'fixture', 'round_bonus', 'arcade_bonus'] }).notNull(),
   reference: text('reference').notNull().unique(),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
 })

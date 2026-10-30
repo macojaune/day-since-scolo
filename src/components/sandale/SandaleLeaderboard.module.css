@@ -1,0 +1,50 @@
+.dialog { width: min(560px, calc(100% - 24px)); max-height: calc(100svh - 32px); overflow-y: auto; padding: 26px; border: 1px solid #38342a; border-radius: 16px; background: #141414; color: #fff; font-family: inherit; scrollbar-color: #bcbcbc #141414; }
+.dialog::backdrop { background: #000b; }
+.dialog ::selection { color: #000; background: #facc15; }
+.dialog button:focus-visible, .dialog a:focus-visible, .scrollArea:focus-visible { outline: 3px solid #f59e0b; outline-offset: 3px; }
+.header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+.dialog .header h2 { margin: 0; font-size: 26px; line-height: 1.1; letter-spacing: -0.03em; font-weight: 750; }
+.close { width: 44px; height: 44px; flex: none; display: grid; place-items: center; margin-right: -9px; padding: 0; border: 0; background: none; color: #bcbcbc; border-radius: 6px; }
+.close:hover { color: #fff; background: #242424; }
+.result { display: flex; gap: 18px; justify-content: space-between; align-items: end; padding-bottom: 22px; }
+.result > div { display: flex; flex-direction: column; gap: 7px; }
+.result span { color: #bcbcbc; font-size: 12px; }
+.placeValue { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.placeValue strong { color: #facc15; font-size: 40px; line-height: 1; font-weight: 750; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.result .time { text-align: right; flex-shrink: 0; }
+.time strong { font-size: 28px; font-weight: 650; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.result .bonus { padding: 6px 9px; border-radius: 6px; background: #facc15; color: #000; font-size: 12px; font-weight: 750; white-space: nowrap; animation: bonus-arrive 550ms cubic-bezier(.16,1,.3,1) both; }
+@keyframes bonus-arrive { from { transform: translateY(9px) rotate(-6deg) scale(.85); opacity: 0; } to { transform: translateY(0) rotate(-3deg) scale(1); opacity: 1; } }
+.saveState { font-size: 12px; line-height: 1.6; }
+.saveState:empty { display: none; }
+.dialog .saveState p { margin: 0 0 12px; color: #bcbcbc; }
+.saveState > button { margin-bottom: 16px; }
+.secondary { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; padding: 10px 15px; border: 1px solid #585043; border-radius: 8px; background: none; color: #fff; font-size: 13px; font-weight: 650; }
+.secondary:hover { background: #242424; }
+.inline { color: #facc15; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; border: 0; background: none; padding: 4px; }
+.dialog .empty { color: #bcbcbc; font-size: 13px; padding: 24px 0; margin: 0; border-top: 1px solid #38342a; }
+.scrollArea { position: relative; max-height: 292px; overflow-y: auto; overscroll-behavior: contain; scrollbar-color: #bcbcbc #141414; border-top: 1px solid #38342a; border-bottom: 1px solid #38342a; }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table thead { position: sticky; top: 0; background: #141414; z-index: 1; }
+.table thead th { font-size: 11px; font-weight: 500; color: #bcbcbc; padding: 11px 5px; text-align: left; }
+.table thead th:last-child, .table td:last-child { text-align: right; }
+.table tbody th, .table td { padding: 17px 5px; border-top: 1px solid #38342a; text-align: left; font-weight: 500; }
+.table tbody th { overflow-wrap: anywhere; max-width: 240px; }
+.table td:first-child { width: 54px; color: #bcbcbc; font-size: 24px; font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; }
+.table td:last-child { white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 650; }
+.table .me { background: #facc1510; }
+.table .me th, .table .me td { color: #facc15; font-weight: 700; }
+.you { margin-left: 8px; font-size: 10px; font-weight: 400; color: #bcbcbc; }
+.more { min-height: 44px; width: 100%; border: 0; background: none; color: #bcbcbc; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.more:hover { color: #facc15; }
+.actions { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 10px; align-items: start; margin-top: 18px; }
+.share { min-width: 0; }
+.shareButton { width: 100%; min-height: 46px; display: flex; justify-content: center; align-items: center; gap: 10px; border: 0; border-radius: 8px; padding: 12px; background: #facc15; color: #000; font-size: 13px; font-weight: 700; }
+.shareButton:hover { background: #ffe16a; }
+.shareOptions { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; margin-top: 12px; }
+.shareOptions > a, .shareOptions > button { min-height: 44px; display: flex; align-items: center; justify-content: center; padding: 8px; border: 1px solid #585043; border-radius: 6px; background: none; color: #fff; font-size: 12px; font-weight: 500; text-decoration: none; }
+.shareOptions > a:hover, .shareOptions > button:hover { background: #242424; }
+.dialog .shareStatus { margin: 12px 0 0; font-size: 12px; color: #bcbcbc; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+@media (max-width: 400px) { .dialog { padding: 20px; } .dialog .header h2 { font-size: 24px; } .result { gap: 10px; } .placeValue strong { font-size: 34px; } .time strong { font-size: 24px; } .actions { grid-template-columns: 1fr; } .actions > button { order: 1; } .scrollArea { max-height: 245px; } }
+@media (prefers-reduced-motion: reduce) { .dialog * { scroll-behavior: auto !important; animation: none !important; } }
