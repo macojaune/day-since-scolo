@@ -15,3 +15,5 @@ L’annonce de lancement sert elle-même de test réel de l’API Buffer. La dem
 > J’ai ajouté une petite surprise sur le site, suite à la suggestion éclairée de @pirate_maggma 👀 Un petit easter egg vous attend… À vous de le trouver : https://scolo.marvinl.com
 
 Les preuves servies, la PR et la référence Buffer seront ajoutées après leur vérification. Les dates et états ci-dessus décrivent la préparation ; un build local n’est pas une preuve de livraison PROD.
+
+La reprise vers `develop` transporte uniquement les commits du mini-jeu et la suppression du bloc « Comment gagner des Zikak ? ». Elle conserve la configuration DEV, son Dockerfile, les workers de synchronisation Zikak et leurs tables. Avant livraison DEV : 126 tests, types et lint passent ; la sauvegarde SQLite est restaurée localement, migrée deux fois et comparée sans perte de données existantes. La recette de la modale utilise des réponses de démonstration en mémoire lorsque DEV n’a aucune apparition, sans ajouter d’apparition en base.
