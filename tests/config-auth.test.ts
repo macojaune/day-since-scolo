@@ -69,7 +69,7 @@ test('database addresses reject ambiguous paths, plaintext endpoints and credent
 })
 
 test('tweet publication stays disabled locally and requires all publication credentials', () => {
-  const credentials = { TWITTER_API_KEY: 'test-only', TWITTER_API_SECRET: 'test-only', TWITTER_ACCESS_TOKEN: 'test-only', TWITTER_ACCESS_SECRET: 'test-only' }
+  const credentials = { BUFFER_API_KEY: 'test-only', BUFFER_CHANNEL_ID: 'channel-test-only' }
   assert.doesNotThrow(() => assertDeploymentConfiguration({ ...publicConfig, SCOLO_TWEETS_ENABLED: 'false' }))
   assert.doesNotThrow(() => assertDeploymentConfiguration({ ...publicConfig, ...credentials, SCOLO_TWEETS_ENABLED: 'true' }))
   assert.throws(() => assertDeploymentConfiguration({ ...local, ...credentials, SCOLO_TWEETS_ENABLED: 'true' }))
