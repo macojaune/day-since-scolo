@@ -2,6 +2,7 @@ import { initTRPC, TRPCError } from '@trpc/server'
 import type { CreateNextContextOptions } from '@trpc/server/adapters/next'
 import superjson from 'superjson'
 import { ZodError } from 'zod'
+import type { NextApiRequest, NextApiResponse } from 'next'
 
 import {
   assertLocalRequest,
@@ -9,9 +10,9 @@ import {
   getRequestIdentity,
 } from '~/server/auth'
 
-export function createTRPCContext({ req }: CreateNextContextOptions) {
+export function createTRPCContext({ req, res }: CreateNextContextOptions): { req: NextApiRequest; res?: NextApiResponse; userId: string | null; isAdmin: boolean } {
   assertLocalRequest(req)
-  return { ...getRequestIdentity(req), req }
+  return { ...getRequestIdentity(req), req, res }
 }
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
