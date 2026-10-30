@@ -116,7 +116,6 @@ export default function SandaleLeaderboard({ open, onClose, onReplay, scores }: 
         {ranking.data.nextOffset !== null && <button type="button" className={styles.more} onClick={() => setOffset(ranking.data!.nextOffset!)}>Voir les places suivantes</button>}
       </div>
     </> : <p className={styles.empty}>La première place t’attend.</p>)}
-    <details className={styles.rules}><summary>Comment gagner des Zikak ?</summary><p>3e : 1 Zikak · 2e : 2 · 1er : 3.<br />Seule la différence est ajoutée quand tu montes. Maximum 3 Zikak au total par compte.</p></details>
     <div className={styles.actions}><button type="button" className={styles.secondary} onClick={onReplay}>Rejouer</button><LeaderboardShare board={ranking.data} /></div>
   </dialog>
 }
