@@ -1,5 +1,4 @@
 import type { Client } from '@libsql/client'
-import { TweetPublicationError } from './twitter'
 
 type Connection = Pick<Client, 'execute'>
 export type TweetStatus = 'pending' | 'sending' | 'sent' | 'failed' | 'unknown'
@@ -42,42 +41,4 @@ export async function enqueueAppearanceTweet(transaction: Connection, input: Twe
   })
 }
 
-export interface TweetDispatchResult { appearanceId: number; status: TweetStatus | 'disabled' | 'not-queued'; tweetId?: string; errorCode?: string }
-
-/**
- * Call only after the game transaction has committed. Claiming is atomic across processes.
- * A crashed 'sending' row is deliberately never retried: reconcile it with X first.
- */
-export async function dispatchAppearanceTweet(client: Connection, appearanceId: number, options: {
-  enabled?: boolean
-  publish: (text: string) => Promise<{ id: string }>
-  now?: () => number
-}): Promise<TweetDispatchResult> {
-  if (!options.enabled) return { appearanceId, status: 'disabled' }
-  const now = options.now ?? Date.now
-  const claimed = (await client.execute({
-    sql: "UPDATE scolo_tweet_outbox SET status = 'sending', attempted_at = ?, error_code = NULL WHERE appearance_id = ? AND status = 'pending' RETURNING content",
-    args: [now(), appearanceId],
-  })).rows[0]
-  if (!claimed) {
-    const row = (await client.execute({ sql: 'SELECT status, tweet_id, error_code FROM scolo_tweet_outbox WHERE appearance_id = ?', args: [appearanceId] })).rows[0]
-    return row ? { appearanceId, status: String(row.status) as TweetStatus, ...(row.tweet_id ? { tweetId: String(row.tweet_id) } : {}), ...(row.error_code ? { errorCode: String(row.error_code) } : {}) } : { appearanceId, status: 'not-queued' }
-  }
-  let result: { id: string }
-  try {
-    result = await options.publish(String(claimed.content))
-  } catch (error) {
-    const publication = error instanceof TweetPublicationError ? error : new TweetPublicationError('unknown', 'TWITTER_OUTCOME_UNKNOWN')
-    await client.execute({
-      sql: "UPDATE scolo_tweet_outbox SET status = ?, error_code = ? WHERE appearance_id = ? AND status = 'sending'",
-      args: [publication.outcome, publication.code, appearanceId],
-    })
-    return { appearanceId, status: publication.outcome, errorCode: publication.code }
-  }
-  // If persistence fails after X accepts, leave 'sending'. Retrying this function cannot repost.
-  await client.execute({
-    sql: "UPDATE scolo_tweet_outbox SET status = 'sent', tweet_id = ?, published_at = ? WHERE appearance_id = ? AND status = 'sending'",
-    args: [result.id, now(), appearanceId],
-  })
-  return { appearanceId, status: 'sent', tweetId: result.id }
-}
+export interface TweetDispatchResult { appearanceId: number; status: TweetStatus | 'queued' | 'disabled' | 'not-queued'; tweetId?: string; errorCode?: string }

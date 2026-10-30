@@ -3,7 +3,7 @@
 /** @typedef {{ SCOLO_WALLET_MODE: WalletMode, SCOLO_ENVIRONMENT?: ApplicationEnvironment }} EnvironmentConfiguration */
 /** @typedef {{ SCOLO_WALLET_MODE: WalletMode, DATABASE_URL: string, DATABASE_AUTH_TOKEN?: string }} DatabaseConfiguration */
 /** @typedef {EnvironmentConfiguration & { APP_URL: string }} ApplicationConfiguration */
-/** @typedef {{ SCOLO_TWEETS_ENABLED?: 'true' | 'false', TWITTER_API_KEY?: string, TWITTER_API_SECRET?: string, TWITTER_ACCESS_TOKEN?: string, TWITTER_ACCESS_SECRET?: string }} TweetConfiguration */
+/** @typedef {{ SCOLO_TWEETS_ENABLED?: 'true' | 'false', BUFFER_API_KEY?: string, BUFFER_CHANNEL_ID?: string }} TweetConfiguration */
 /** @typedef {EnvironmentConfiguration & { SCOLO_ZIKAK_SYNC_ENABLED?: 'true' | 'false', ZIKAK_API_ORIGIN?: string, ZIKAK_APPLICATION_ID?: string, ZIKAK_INTEGRATION_TOKEN?: string }} PointSyncConfiguration */
 
 const loopbackNames = new Set(['localhost', '127.0.0.1', '[::1]'])
@@ -105,8 +105,8 @@ export function assertDeploymentConfiguration(config) {
     throw new Error(`Le mode ${config.SCOLO_WALLET_MODE} exige les clés Clerk ${kind === 'test' ? 'Development' : 'Production'} correspondantes.`)
   }
   if (config.SCOLO_TWEETS_ENABLED === 'true' && (environment !== 'prod' || config.SCOLO_WALLET_MODE !== 'scolo' ||
-    ![config.TWITTER_API_KEY, config.TWITTER_API_SECRET, config.TWITTER_ACCESS_TOKEN, config.TWITTER_ACCESS_SECRET].every(value => value?.trim()))) {
-    throw new Error('La publication X exige le mode Scolo et ses quatre identifiants de publication serveur.')
+    ![config.BUFFER_API_KEY, config.BUFFER_CHANNEL_ID].every(value => value && !/\s/.test(value)))) {
+    throw new Error('La publication X via Buffer exige PROD, le portefeuille Scolo, BUFFER_API_KEY et BUFFER_CHANNEL_ID côté serveur.')
   }
 }
 

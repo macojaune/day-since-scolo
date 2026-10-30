@@ -17,7 +17,8 @@
     "with-env": "dotenv -e ./.env.local --",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "buffer:check": "node --env-file=.env.local --import tsx scripts/check-buffer.ts"
   },
   "dependencies": {
     "@clerk/localizations": "4.24.3",

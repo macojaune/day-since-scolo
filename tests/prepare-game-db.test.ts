@@ -83,6 +83,23 @@ test('repeating preparation never refills a previously used balance or changes i
   assert.equal((await client.execute('SELECT COUNT(*) AS n FROM scolo_wallet_entries')).rows[0]!.n, 1)
 })
 
+test('Buffer migration preserves legacy X receipts and uncertain attempts without enqueueing history', async t => {
+  const { client } = await fixture(t)
+  await prepareGameDatabase(client, { apply: true })
+  await client.execute('DROP TABLE scolo_buffer_posts')
+  await client.execute("INSERT INTO scolo_tweet_outbox (appearance_id,content,status,created_at,attempted_at,published_at,tweet_id,error_code) VALUES (67,'Original published text','sent',100,101,102,'987654321',NULL)")
+  await client.execute("INSERT INTO \"scolo-data\" VALUES (68,1793157100,'coutelas')")
+  await client.execute("INSERT INTO scolo_tweet_outbox (appearance_id,content,status,created_at,error_code) VALUES (68,'Original uncertain text','unknown',103,'TWITTER_NETWORK_OUTCOME_UNKNOWN')")
+  const before = (await client.execute('SELECT * FROM scolo_tweet_outbox ORDER BY appearance_id')).rows
+  const dryRun = await prepareGameDatabase(client)
+  assert.ok(dryRun.plan.tablesToCreate.includes('scolo_buffer_posts'))
+  await prepareGameDatabase(client, { apply: true })
+  await prepareGameDatabase(client, { apply: true })
+  assert.deepEqual((await client.execute('SELECT * FROM scolo_tweet_outbox ORDER BY appearance_id')).rows, before)
+  assert.equal((await client.execute('SELECT COUNT(*) AS n FROM scolo_buffer_posts')).rows[0]!.n, 0)
+  assert.equal((await client.execute('PRAGMA foreign_key_check')).rows.length, 0)
+})
+
 test('a welcome-ledger failure rolls back the new player and wallet', async t => {
   const { client } = await fixture(t)
   await migrateGameDatabase(client)

@@ -5,6 +5,7 @@ import { createGameService, type GameService } from './service'
 import type { WalletMode } from './types'
 import { applicationEnvironment, pointSyncConfiguration } from '../../config.js'
 import { startPointSyncWorker, stopPointSyncWorker } from '../zikak/runtime'
+import { startAppearancePublicationWorker } from '../social/appearance-publication'
 
 const globalForGame = globalThis as unknown as { scoloGame?: { client: Client; mode: WalletMode; environment: string; tweetEnabled: boolean; zikakApplicationId?: string; service: Promise<GameService> } }
 
@@ -24,6 +25,7 @@ export async function getGameService(): Promise<GameService> {
     })
   }
   const service = await globalForGame.scoloGame.service
+  startAppearancePublicationWorker(client)
   if (sync) startPointSyncWorker(client, sync)
   return service
 }
