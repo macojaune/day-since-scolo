@@ -185,18 +185,14 @@ export default function GamePage() {
           </main>
         )}
         <footer className="site-footer">
-          <p>
-            Créé dans la frustration par{' '}
-            <a href="https://marvinl.com">Marvin</a>.<br />
-            <span>
-              Une maison garantie sans scolo ?{' '}
-              <a href="https://t.me/macojaune">Je prends !</a>
-            </span>
+          <p className="footer-signature">
+            Barricadé entre deux coups de digrain par{' '}
+            <a href="https://marvinl.com">MarvinL.com</a>
           </p>
-          <span>
-            Parie avec des points fictifs. Aucun argent réel.<br />
+          <p className="footer-details">
+            <span>Parie avec des points fictifs. Aucun argent réel.</span>
             <Link href="/confidentialite">Confidentialité</Link>
-          </span>
+          </p>
         </footer>
       </div>
     </div>
