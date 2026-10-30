@@ -1,0 +1,71 @@
+.slot {
+  --slot-width: 200px;
+  width: var(--slot-width);
+  height: 224px;
+  position: relative;
+}
+:global(.weapon-region) > .slot { flex: none; }
+.trigger { display: grid; place-items: center; width: 100%; height: 100%; padding: 0; background: none; border: 0; border-radius: 6px; }
+.slot .trigger img { object-fit: contain; width: 100%; height: 185px; transition: transform 180ms ease-out; }
+.trigger:hover img { transform: rotate(-6deg); }
+.trigger:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }
+.loading { display: grid; place-items: center; height: 100%; color: #bcbcbc; font-size: 12px; }
+
+.game {
+  --yellow: #facc15;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #141414;
+  color: #fff;
+}
+.game ::selection { background: var(--yellow); color: #000; }
+.game button { -webkit-tap-highlight-color: transparent; }
+.game button:focus-visible { outline: 2px solid #f59e0b; outline-offset: -2px; }
+.hud { display: flex; align-items: center; height: 44px; padding-left: 9px; }
+.hud strong { margin-right: auto; font-size: 14px; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -0.025em; }
+.iconButton { width: 44px; height: 44px; flex: none; display: grid; place-items: center; color: #fff; background: none; border: 0; padding: 0; }
+.iconButton:hover:not(:disabled) { color: var(--yellow); background: #242424; }
+.iconButton:disabled { opacity: 0.3; }
+.board { --goal-width: 29px; position: relative; isolation: isolate; height: 156px; overflow: hidden; background: #c9bfa2; transition: background-color 1.5s ease; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.board:focus-visible { outline: 2px solid #f59e0b; outline-offset: -2px; }
+.playing { touch-action: none; cursor: crosshair; }
+.night { background: #494d50; }
+.floor { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: #615746; stroke-width: 0.8; opacity: 0.2; pointer-events: none; }
+.night .floor { stroke: #d0c8a7; opacity: 0.13; }
+.goal { position: absolute; right: 0; top: 0; height: 100%; width: var(--goal-width); display: flex; align-items: center; justify-content: center; background: #b6a27c40; border-left: 1px dashed #685a4080; pointer-events: none; }
+.goal > svg { width: 28px; height: 132px; transition: transform 200ms ease-out; }
+.escaped > svg { transform: translateX(75%) rotate(10deg); }
+.bug { position: absolute; left: calc(29px + (100% - var(--goal-width) - 58px) * var(--progress)); top: calc(20% + var(--lane) * 30%); width: 68px; height: 44px; padding: 0; border: 0; border-radius: 5px; background: none; transform: translate(-50%, -50%); cursor: crosshair; z-index: 2; touch-action: none; }
+.bug svg { width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.bug:hover { background: #fff8cf20; }
+.impact { position: absolute; width: 72px; height: 72px; transform: translate(-50%, -70%); z-index: 4; pointer-events: none; }
+.game .impact img { width: 72px; height: 72px; object-fit: contain; transform-origin: 60% 90%; animation: slap 290ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.impact span { position: absolute; left: 38px; top: 48px; padding: 1px 3px; border-radius: 2px; background: var(--yellow); color: #161405; font-size: 10px; font-weight: 850; transform: rotate(-8deg); animation: paf 310ms ease-out both; white-space: nowrap; }
+@keyframes slap { 0% { transform: rotate(-35deg) scale(1.15); } 36% { transform: rotate(9deg) scale(0.88); } 75% { opacity: 1; } 100% { transform: rotate(-17deg) translateY(-6px); opacity: 0; } }
+@keyframes paf { 0% { scale: 0.85; } 30% { scale: 1.1; } 70% { opacity: 1; } 100% { opacity: 0; } }
+.curtain, .countdown { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #141414eF; color: #fff; cursor: auto; }
+.game .curtain h3 { margin: 0; font-size: 22px; font-weight: 750; line-height: 1.1; letter-spacing: -0.025em; }
+.game .finalTime { margin: 4px 0 0; font-size: 19px; line-height: 1.2; font-weight: 650; color: var(--yellow); font-variant-numeric: tabular-nums; }
+.recordNote { margin-top: 4px; color: var(--yellow); font-size: 10px; line-height: 1.2; }
+.primary { min-height: 44px; min-width: 102px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 4px; background: var(--yellow); color: #000; margin-top: 10px; padding: 8px 16px; font-size: 12px; font-weight: 700; }
+.primary:hover { background: #ffe16a; }
+.primary:active { background: #eab308; }
+.resultActions { display: flex; gap: 5px; width: calc(100% - 12px); margin-top: 10px; }
+.resultActions .primary, .rankingButton { min-width: 0; flex: 1; padding: 5px; margin-top: 0; font-size: 11px; }
+.rankingButton { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; background: transparent; color: #fff; border: 1px solid #585043; border-radius: 4px; font-weight: 650; }
+.rankingButton:hover { background: #242424; }
+.countdown { background: #141414a8; }
+.countdown strong { color: var(--yellow); font-size: 48px; font-weight: 800; line-height: 1; }
+.record { position: relative; height: 24px; display: flex; align-items: center; justify-content: center; color: #bcbcbc; font-size: 10px; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.recovery { position: absolute; inset: auto 0 0; display: block; height: 2px; background: #38342a; }
+.recovery > span { display: block; height: 100%; background: var(--yellow); transform-origin: left; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+@media (max-width: 1100px) { .slot { --slot-width: 180px; } }
+@media (max-width: 380px) { .slot { --slot-width: 164px; } .hud { padding-left: 7px; } .hud strong { font-size: 13px; } }
+@media (prefers-reduced-motion: reduce) {
+  .slot *, .slot *::before, .slot *::after { animation: none !important; transition: none !important; }
+  .impact img { transform: rotate(9deg) scale(0.88); }
+}

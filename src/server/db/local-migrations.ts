@@ -1,3 +1,4 @@
+import { arcadeSchema } from '../arcade/schema'
 import type { Client } from '@libsql/client'
 import { participationSchema } from '../social/participation-tweets'
 import { bufferPostsSchema, participationBufferPostsSchema } from '../social/buffer-outbox'
@@ -5,7 +6,7 @@ import { tweetOutboxSchema } from '../social/tweet-outbox'
 import { zikakOutboxSchema } from '../zikak/outbox'
 import { pointJobsSchema } from '../zikak/jobs'
 
-export const GAME_SCHEMA_VERSION = '2026-10-30-social-milestones-v4'
+export const GAME_SCHEMA_VERSION = '2026-10-30-social-arcade-v5'
 
 // Repeatable bootstrap. Historical auth, credits and bets are neither
 // rewritten nor considered spendable Zikak. CHECKs also protect direct SQL use.
@@ -13,7 +14,7 @@ const walletEntriesDefinition = `(
   id TEXT PRIMARY KEY NOT NULL,
   player_id TEXT NOT NULL REFERENCES scolo_players(id),
   amount INTEGER NOT NULL,
-  kind TEXT NOT NULL CHECK (kind IN ('welcome', 'reserve', 'payout', 'refund', 'fixture', 'round_bonus')),
+  kind TEXT NOT NULL CHECK (kind IN ('welcome', 'reserve', 'payout', 'refund', 'fixture', 'round_bonus', 'arcade_bonus')),
   reference TEXT NOT NULL UNIQUE,
   created_at INTEGER NOT NULL
 )`
@@ -82,6 +83,7 @@ const statements = [
   )`,
   ...zikakOutboxSchema,
   ...pointJobsSchema,
+  ...arcadeSchema,
   ...participationSchema,
   participationBufferPostsSchema,
 ]
@@ -101,7 +103,7 @@ export async function migrateGameDatabase(client: Client) {
   try {
     for (const statement of statements) await transaction.execute(statement)
     const definition = (await transaction.execute("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'scolo_wallet_entries'")).rows[0]!
-    if (!String(definition.sql).includes("'round_bonus'")) {
+    if (!String(definition.sql).includes("'arcade_bonus'")) {
       // SQLite cannot ALTER a CHECK. Preserve every entry and any explicit
       // index/trigger while replacing only this table, in the same transaction.
       const attachments = (await transaction.execute("SELECT sql FROM sqlite_master WHERE tbl_name = 'scolo_wallet_entries' AND type IN ('index', 'trigger') AND sql IS NOT NULL")).rows

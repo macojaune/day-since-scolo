@@ -2,6 +2,7 @@ import { useAuth, SignInButton, UserButton } from '@clerk/nextjs'
 import { useEffect, useRef, useState } from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
+import SandaleEasterEgg from '~/components/sandale/SandaleEasterEgg'
 import Link from 'next/link'
 import EncounterHistory from '~/components/EncounterHistory'
 import PredictionGame from '~/components/PredictionGame'
@@ -276,7 +277,7 @@ function LastEncounter({ game }: { game: PublicGame }) {
         )}
       </div>
       {encounter && Object.hasOwn(weapons, encounter.tool) && (
-        <Image
+        encounter.tool === 'sandale' ? <SandaleEasterEgg /> : <Image
           src={`/${encounter.tool}.png`}
           width={200}
           height={200}
