@@ -10,6 +10,7 @@ import ZikakLabel from '~/components/ZikakLabel'
 import type { PublicGame } from '~/server/game/types'
 import { api } from '~/utils/api'
 import { BRAND_NAME } from '~/utils/brand'
+import { SOCIAL_DESCRIPTION, SOCIAL_TITLE } from '~/utils/social-preview'
 import { trackGameEvent } from '~/utils/analytics'
 import { rememberDraftForSignIn } from '~/utils/game-draft'
 import {
@@ -64,10 +65,10 @@ export default function GamePage() {
   return (
     <div className="scolo-app">
       <Head>
-        <title>{BRAND_NAME} · Jou san bèt a mil pat</title>
+        <title>{`${SOCIAL_TITLE} · ${BRAND_NAME}`}</title>
         <meta
           name="description"
-          content="Le compteur de jours sans scolopendre, le journal des rencontres et tes pronostics sur la prochaine apparition."
+          content={SOCIAL_DESCRIPTION}
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
@@ -185,7 +186,7 @@ export default function GamePage() {
         )}
         <footer className="site-footer">
           <p className="footer-signature">
-            barricadé entre deux coups de digrain par{' '}
+            Barricadé entre deux coups de digrain par{' '}
             <a href="https://marvinl.com">MarvinL.com</a>
           </p>
           <p className="footer-details">

@@ -1,4 +1,4 @@
-# Synchronisation Zikak à la clôture d’une manche — V1 DEV
+# Synchronisation Zikak à la clôture d’une manche, V1
 
 Décision de Marvin : synchroniser lors de la déclaration d’une nouvelle
 apparition, pas à chaque pari. Scolo conserve pour cette version son portefeuille
@@ -93,16 +93,17 @@ durable conserve les envois et reçus ; une reprise renvoie le même lot, jamais
 nouvel identifiant destiné à contourner un échec. Les anciens lots V1 conservent leur corps et leurs références, avec résolution préalable de leurs sujets. Un travail attend les envois antérieurs du même joueur. Les refus d’authentification, conflits et erreurs métier restent
 visibles et ne sont pas considérés comme des succès.
 
-La synchronisation est désactivée par défaut. Pour ce chantier, activation DEV
-uniquement, vers Zikak DEV avec une source distincte. Aucune reprise des données
-PROD et aucune mutation de configuration PROD.
+La synchronisation est désactivée par défaut. La promotion autorisée le
+31 octobre 2026 raccorde Scolo PROD à Zikak DEV avec la source `scolo-prod` et
+un credential dédié, distinct de ceux de Scolo DEV et du local. Elle reprend
+uniquement le journal de sa propre base au prochain règlement réel de manche.
 
 Cette V1 remonte les mouvements d’un portefeuille encore local. Elle ne rend
 pas le solde global immédiatement dépensable sur tous les sites et ne garantit
 pas la prévention des dépenses simultanées entre plusieurs portefeuilles locaux.
 Cela demandera les commandes centrales de réservation et de règlement.
 
-## Configuration et reprise DEV
+## Configuration et reprise
 
 Côté Scolo : `SCOLO_ZIKAK_SYNC_ENABLED=true`, `ZIKAK_API_ORIGIN`,
 `ZIKAK_APPLICATION_ID` et `ZIKAK_INTEGRATION_TOKEN` sont des variables serveur.
@@ -111,7 +112,7 @@ Les sources dédiées sont respectivement scolo-dev-local, scolo-dev et scolo-pr
 Le service DEV utilise Clerk Development, sa propre SQLite persistante et une
 origine HTTPS. Seul le local autorise HTTP loopback vers un moteur jetable.
 La cible distante autorisée est https://api-zikak-dev.marvinl.com, y compris pour
-une future activation PROD distincte. Cette livraison n'active ni ne modifie PROD.
+Scolo PROD, dont l’activation reste explicite et séparée du build.
 La DB conserve l’application à laquelle ses lots appartiennent et refuse un
 changement d’application sur la même file, même après confirmation des lots.
 
@@ -127,6 +128,14 @@ antérieurs encore inédits. Une base de démonstration contient des fixtures ;
 elle doit viser exclusivement une source DEV isolée. Ne pas changer de source
 pour contourner une file bloquée. Ne pas restaurer une ancienne file en
 supprimant les reçus du moteur.
+
+La promotion PROD exige une préparation explicite au schéma
+`2026-10-31-zikak-sync-v6`, après restauration et répétition sur une copie.
+Elle ajoute les quatre tables `scolo_zikak_*` sans recréer de joueur, créditer
+de bonus ou préparer de lot. Le démarrage vérifie cette version. Activer le
+worker ne rejoue pas un règlement existant : la prochaine rencontre prépare
+les mouvements inédits. Une identité en attente se vérifie dans Zikak avant
+qu’un lot puisse créditer ses points.
 
 Le worker Node reprend les lots en attente toutes les 15 secondes et au
 démarrage du service de jeu. Un travail par joueur possède un bail de 90 secondes ; un crash

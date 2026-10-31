@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { test, type TestContext } from 'node:test'
 import { createClient } from '@libsql/client'
 import { createGameService } from '../src/server/game/service'
-import { migrateLocalDatabase } from '../src/server/db/local-migrations'
+import { migrateLocalDatabase, migrateGameDatabase, GAME_SCHEMA_VERSION } from '../src/server/db/local-migrations'
 import { pointSyncConfiguration } from '../src/config.js'
 import {
   createPointPublisher,
@@ -496,4 +496,22 @@ test('migration preserves queued V1 payloads and new pending jobs without reseed
   await migrateLocalDatabase(client)
   assert.deepEqual((await client.execute('SELECT * FROM scolo_zikak_batches')).rows, before)
   assert.deepEqual((await client.execute('SELECT * FROM scolo_wallet_entries')).rows, ledger)
+})
+
+test('PROD refuses the pre-sync schema until explicit preparation, without changing the ledger', async (t) => {
+  const { client, service } = await fixture(t, false)
+  await service.ensurePlayer({ userId: 'existing-prod-player' })
+  const ledger = (await client.execute('SELECT * FROM scolo_wallet_entries')).rows
+  const game = await service.getPublicGame()
+  await client.execute('DELETE FROM scolo_schema_migrations')
+  await client.execute("INSERT INTO scolo_schema_migrations VALUES ('2026-10-30-social-arcade-v5', 1)")
+  const options = { walletMode: 'scolo' as const, environment: 'prod' as const, zikakApplicationId: 'scolo-prod' }
+  await assert.rejects(createGameService(client, options), /migration du jeu/)
+  await migrateGameDatabase(client)
+  const prepared = await createGameService(client, options)
+  assert.equal((await prepared.getPublicGame()).round.id, game.round.id)
+  assert.equal((await client.execute('SELECT * FROM scolo_wallet_entries')).rows.length, ledger.length)
+  assert.deepEqual((await client.execute('SELECT * FROM scolo_wallet_entries')).rows, ledger)
+  assert.equal((await client.execute({ sql: 'SELECT version FROM scolo_schema_migrations WHERE version=?', args: [GAME_SCHEMA_VERSION] })).rows.length, 1)
+  assert.equal((await client.execute('SELECT COUNT(*) AS n FROM scolo_zikak_jobs')).rows[0]!.n, 0)
 })

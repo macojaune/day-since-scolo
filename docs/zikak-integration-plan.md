@@ -3,8 +3,9 @@
 Contrôle du 29 octobre 2026 UTC. Ce document décrit la cible de portefeuille
 central, différée. La première version demandée depuis par Marvin synchronise
 les mouvements au règlement d’une manche : voir
-[le contrat V1](zikak-settlement-sync-v1.md). Elle est en cours de validation DEV,
-désactivée par défaut et n’est pas active en production.
+[le contrat V1](zikak-settlement-sync-v1.md), qui décrit aussi la promotion
+Scolo PROD vers Zikak DEV autorisée le 31 octobre 2026. Le présent document
+conserve l’audit initial et la cible ultérieure de portefeuille central.
 
 ## État vérifié
 
