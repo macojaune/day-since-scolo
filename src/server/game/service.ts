@@ -4,11 +4,13 @@ import type { Client, InArgs, Row, Transaction } from '@libsql/client'
 import { GAME_SCHEMA_VERSION, migrateLocalDatabase } from '../db/local-migrations'
 import { enqueueAppearanceTweet } from '../social/tweet-outbox'
 import { enqueueParticipationTweet } from '../social/participation-tweets'
+import { enqueuePointJobs } from '../zikak/jobs'
 import { calculateReplayBonuses, calculateSettlement, gameDayStart, safeTotal, type SettlementTicket } from './settlement'
 import { ensurePlayerInTransaction } from './player'
 import {
   GameError,
   type Appearance,
+  type ApplicationEnvironment,
   type HistoricalAppearanceInput,
   type WalletMode,
   type PlacePredictionInput,
@@ -21,7 +23,7 @@ import {
   type SettlementResult,
 } from './types'
 
-interface ClockOptions { now?: () => Date; id?: () => string; walletMode?: WalletMode; environment?: 'local' | 'dev' | 'prod'; tweetEnabled?: boolean }
+interface ClockOptions { now?: () => Date; id?: () => string; walletMode?: WalletMode; environment?: ApplicationEnvironment; tweetEnabled?: boolean; zikakApplicationId?: string }
 type Connection = Pick<Client, 'execute'> | Transaction
 
 function iso(value: unknown) { return new Date(Number(value)).toISOString() }
@@ -53,12 +55,20 @@ export class GameService {
   private readonly newId: () => string
   private readonly walletMode: WalletMode
   private readonly tweetEnabled: boolean
+  private readonly zikakApplicationId?: string
+  private readonly environment: ApplicationEnvironment
 
   constructor(private readonly client: Client, options: ClockOptions = {}) {
     this.clock = options.now ?? (() => new Date())
     this.newId = options.id ?? randomUUID
     this.walletMode = options.walletMode ?? 'local'
-    this.tweetEnabled = (options.environment ?? (this.walletMode === 'scolo' ? 'prod' : 'local')) === 'prod' && this.walletMode === 'scolo' && options.tweetEnabled === true
+    this.environment = options.environment ?? (this.walletMode === 'local' ? 'local' : 'prod')
+    this.tweetEnabled = this.environment === 'prod' && this.walletMode === 'scolo' && options.tweetEnabled === true
+    const source = this.environment === 'prod' ? /^scolo-prod$/ : /^scolo-dev(?:-[a-z0-9-]+)?$/
+    if (options.zikakApplicationId && !source.test(options.zikakApplicationId)) {
+      throw new GameError('CONFIGURATION_ERROR', 'La source Zikak ne correspond pas à cet environnement Scolo.')
+    }
+    this.zikakApplicationId = options.zikakApplicationId
   }
 
   async initialize() {
@@ -71,6 +81,10 @@ export class GameService {
       if (!version.length) throw new GameError('CONFIGURATION_ERROR', 'La migration du jeu doit être appliquée avant son ouverture.')
     }
     await this.write(async transaction => {
+      if (this.zikakApplicationId) {
+        const otherSource = await query(transaction, 'SELECT 1 FROM scolo_zikak_batches WHERE application_id <> ? UNION ALL SELECT 1 FROM scolo_zikak_jobs WHERE application_id <> ? LIMIT 1', [this.zikakApplicationId,this.zikakApplicationId])
+        if (otherSource.length) throw new GameError('CONFIGURATION_ERROR', 'Cette base est déjà liée à une autre application Zikak DEV.')
+      }
       const open = await query(transaction, "SELECT id FROM scolo_rounds WHERE status = 'open'")
       if (!open.length) {
         await transaction.execute({
@@ -133,7 +147,7 @@ export class GameService {
         .map(row => ({ id: Number(row.id), occurredAt: iso(Number(row.created_at) * 1000), tool: String(row.tool ?? 'inconnu') }))
       const settlement = (await query(transaction, 'SELECT * FROM scolo_settlements ORDER BY declared_at DESC, round_id DESC LIMIT 1'))[0]
       return {
-        walletMode: this.walletMode, isSimulated: this.walletMode === 'local',
+        environment: this.environment, walletMode: this.walletMode, isSimulated: this.environment !== 'prod',
         round: {
           id: String(round.id), openedAt: iso(round.opened_at), pot,
           predictionCount: tickets.length,
@@ -315,7 +329,9 @@ export class GameService {
         winners: [...winners.values()], totalRefunded: result.totalRefunded,
       }, this.tweetEnabled)
       await transaction.execute({ sql: "UPDATE scolo_participation_tweets SET status='skipped',error_code='ROUND_CLOSED' WHERE round_id=? AND status='pending'", args: [input.roundId] })
-
+      if (this.zikakApplicationId) await enqueuePointJobs(transaction, {
+        roundId: input.roundId, applicationId: this.zikakApplicationId, now, id: this.newId,
+      })
       return { ...result, nextRoundId, appearanceId: Number(appearance.id) }
     })
   }

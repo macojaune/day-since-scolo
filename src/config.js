@@ -4,6 +4,7 @@
 /** @typedef {{ SCOLO_WALLET_MODE: WalletMode, DATABASE_URL: string, DATABASE_AUTH_TOKEN?: string }} DatabaseConfiguration */
 /** @typedef {EnvironmentConfiguration & { APP_URL: string }} ApplicationConfiguration */
 /** @typedef {{ SCOLO_TWEETS_ENABLED?: 'true' | 'false', BUFFER_API_KEY?: string, BUFFER_CHANNEL_ID?: string }} TweetConfiguration */
+/** @typedef {EnvironmentConfiguration & { SCOLO_ZIKAK_SYNC_ENABLED?: 'true' | 'false', ZIKAK_API_ORIGIN?: string, ZIKAK_APPLICATION_ID?: string, ZIKAK_INTEGRATION_TOKEN?: string }} PointSyncConfiguration */
 
 const loopbackNames = new Set(['localhost', '127.0.0.1', '[::1]'])
 
@@ -69,10 +70,32 @@ export function applicationOrigin(config) {
   return url.origin
 }
 
-/** @param {DatabaseConfiguration & ApplicationConfiguration & TweetConfiguration & { CLERK_SECRET_KEY: string, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: string }} config */
+/** @param {PointSyncConfiguration} config */
+export function pointSyncConfiguration(config) {
+  if (config.SCOLO_ZIKAK_SYNC_ENABLED !== 'true') return null
+  const environment = applicationEnvironment(config)
+  let origin
+  try { origin = new URL(config.ZIKAK_API_ORIGIN ?? '') } catch { throw new Error('Origine Zikak DEV requise.') }
+  const local = environment === 'local' && loopbackNames.has(origin.hostname) && origin.protocol === 'http:'
+  if ((!local && origin.origin !== 'https://api-zikak-dev.marvinl.com') ||
+    origin.username || origin.password || origin.pathname !== '/' || origin.search || origin.hash) {
+    throw new Error('La synchronisation exige l’origine Zikak DEV ou un serveur de test local.')
+  }
+  const applicationId = config.ZIKAK_APPLICATION_ID
+  const token = config.ZIKAK_INTEGRATION_TOKEN
+  const expectedApplication = environment === 'prod' ? 'scolo-prod' : environment === 'dev' ? 'scolo-dev' : 'scolo-dev-local'
+  if (!applicationId || !token || applicationId !== expectedApplication ||
+    !/^[A-Za-z0-9_-]{32,128}$/.test(token)) {
+    throw new Error('Une source Zikak et son credential dédiés à cet environnement Scolo sont requis.')
+  }
+  return { origin: origin.origin, applicationId, token }
+}
+
+/** @param {DatabaseConfiguration & ApplicationConfiguration & TweetConfiguration & PointSyncConfiguration & { CLERK_SECRET_KEY: string, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: string }} config */
 export function assertDeploymentConfiguration(config) {
   assertDatabaseConfiguration(config)
   applicationOrigin(config)
+  pointSyncConfiguration(config)
   const environment = applicationEnvironment(config)
   if (environment === 'prod' && config.SCOLO_WALLET_MODE !== 'scolo') throw new Error('PROD exige le portefeuille Scolo persistant Turso.')
   if (environment === 'local' && config.SCOLO_WALLET_MODE !== 'local') throw new Error('Le local exige une base SQLite de test.')
