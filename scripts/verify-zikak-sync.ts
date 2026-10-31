@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { createClient } from '@libsql/client'
+import { migrateGameDatabase } from '../src/server/db/local-migrations'
 import { createGameService } from '../src/server/game/service'
 import { createPointPublisher, type PointReceipt } from '../src/server/zikak/outbox'
 import { dispatchPointJob, pointJobsSummary, type PointJobDependencies } from '../src/server/zikak/jobs'
@@ -11,7 +12,9 @@ import { claimsFromClerk, createSubjectResolver, type SubjectResolution } from '
 
 // Explicit consumer E2E against the real Go launcher's disposable database only.
 const origin = 'http://127.0.0.1:18088'
-const config = { origin, applicationId: 'scolo-dev-e2e-scolo', token: 'synthetic-local-scolo-e2e-only-000000000000' }
+const environment = process.env.E2E_SCOLO_ENVIRONMENT ?? 'dev'
+assert.ok(environment === 'dev' || environment === 'prod', 'E2E_SCOLO_ENVIRONMENT must be dev or prod')
+const config = { origin, applicationId: environment === 'prod' ? 'scolo-prod' : 'scolo-dev-e2e-scolo', token: 'synthetic-local-scolo-e2e-only-000000000000' }
 const business = 'synthetic-local-business-e2e-only-000000000000'
 const directory = await mkdtemp(join(tmpdir(), 'scolo-zikak-http-'))
 const client = createClient({ url: `file:${join(directory, 'scolo.db')}` })
@@ -55,9 +58,11 @@ try {
   })
   await admin(`/members/${alice.id}/identities`, { source_type: 'email', external_id: email })
   await admin(`/members/${bob.id}/identities`, { source_type: 'apify_instagram', external_id: handle })
+  await migrateGameDatabase(client)
   const service = await createGameService(client, {
     now: () => new Date(clock),
-    environment: 'dev',
+    environment,
+    walletMode: environment === 'prod' ? 'scolo' : 'local',
     zikakApplicationId: config.applicationId,
   })
   const roundId = (await service.getPublicGame()).round.id

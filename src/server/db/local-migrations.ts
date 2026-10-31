@@ -6,7 +6,7 @@ import { tweetOutboxSchema } from '../social/tweet-outbox'
 import { zikakOutboxSchema } from '../zikak/outbox'
 import { pointJobsSchema } from '../zikak/jobs'
 
-export const GAME_SCHEMA_VERSION = '2026-10-30-social-arcade-v5'
+export const GAME_SCHEMA_VERSION = '2026-10-31-zikak-sync-v6'
 
 // Repeatable bootstrap. Historical auth, credits and bets are neither
 // rewritten nor considered spendable Zikak. CHECKs also protect direct SQL use.
