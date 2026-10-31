@@ -207,11 +207,13 @@ test('settlement through SQLite and real HTTP reaches sent once, with a link and
   let clock = appearedAt.getTime()
   const service = await createGameService(client, { walletMode: 'scolo', tweetEnabled: true, now: () => new Date(clock) })
   const roundId = (await service.getPublicGame()).round.id
-  await service.placePrediction({ userId: 'synthetic-player', roundId, predictedAt: new Date(clock + 60_000), stake: 1, idempotencyKey: 'test-buffer-bet' })
+  await service.placePrediction({ userId: 'synthetic-player', displayName: 'pirate_maggma', roundId, predictedAt: new Date(clock + 60_000), stake: 1, idempotencyKey: 'test-buffer-bet' })
   clock += 120_000
   const input = { roundId, observedAt: new Date(clock - 1000), tool: 'sandale' }
   const settlement = await service.settleRound(input)
   const before = await service.getPlayerGame('synthetic-player')
+  const content = String((await client.execute('SELECT content FROM scolo_tweet_outbox')).rows[0]!.content)
+  assert.match(content, /\n\n@pirate_maggma remporte 1 zikak\.\n\nNouvelle manche ouverte\.\nViens parier/)
   let creations = 0, reads = 0
   const server: Server = createServer((request, result) => {
     void (async () => {
@@ -222,7 +224,7 @@ test('settlement through SQLite and real HTTP reaches sent once, with a link and
       let data: unknown
       if (body.query.includes('ScoloChannel')) data = { channel }
       else if (body.query.includes('mutation')) {
-        creations++; assert.ok(body.variables.input.text.includes('https://scolo.marvinl.com'))
+        creations++; assert.equal(body.variables.input.text, content)
         data = { createPost: { __typename: 'PostActionSuccess', post: wirePost } }
       } else { reads++; data = { post: { ...wirePost, status: 'sent', externalLink: 'https://x.com/scolo/status/987654321' } } }
       result.writeHead(200, { 'Content-Type': 'application/json' }); result.end(JSON.stringify({ data }))

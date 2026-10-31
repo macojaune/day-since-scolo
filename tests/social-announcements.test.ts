@@ -64,13 +64,20 @@ test('approved participation copy fits with ordinary and maximum safe counts and
   assert.match(buildParticipationTweet({ participants: 10, predictions: 10, pot: 10, since: null, now: START }), /Durée du run inconnue/)
 })
 
-test('appearance copy preserves run, winners, winnings, weapon and restart within 280 weighted characters', () => {
+test('appearance copy follows the approved multiline template with a winner mention', () => {
+  const observedAt = new Date('2026-10-31T13:04:00-04:00')
+  const text = buildAppearanceTweet({ observedAt, tool: 'sandale', previousAppearanceAt: observedAt.getTime() - (3 * DAY + 13 * 3600000 + 54 * 60000), winners: [{ name: 'pirate_maggma', amount: 8 }] })
+  assert.equal(text, `Et un nouveau Scolo ce 31/10/2026 à 13:04 🥲\nManche terminée après 3 j 13 h 54 min.\nMoyen de défense : sandale.\n\n@pirate_maggma remporte 8 zikak.\n\nNouvelle manche ouverte.\nViens parier sur mon malheur ${SCOLO_URL}`)
+  assert.ok(validTweet(text))
+})
+
+test('appearance copy preserves duration, winners, winnings, weapon and restart within 280 weighted characters', () => {
   const input = { observedAt: new Date(START), tool: 'coutelas', previousAppearanceAt: START - 12 * DAY, winners: [{ name: 'Alice', amount: 42 }, { name: 'Bob', amount: 42 }] }
   const text = buildAppearanceTweet(input)
-  assert.match(text, /Run terminé après 12 j/)
-  assert.match(text, /Alice et Bob se partagent 84 zikak/)
-  assert.match(text, /Défense : coutelas/)
-  assert.match(text, /Nouveau run, nouvelle manche/)
+  assert.match(text, /Manche terminée après 12 j/)
+  assert.match(text, /@Alice et @Bob se partagent 84 zikak/)
+  assert.match(text, /défense : coutelas/)
+  assert.match(text, /Nouvelle manche ouverte\.\nViens parier/)
   assert.ok(validTweet(text))
   const huge = buildAppearanceTweet({ ...input, winners: Array.from({ length: 300 }, () => ({ name: '界'.repeat(60), amount: 1000 })) })
   assert.match(huge, /300 gagnants se partagent 300000 zikak/); assert.ok(validTweet(huge))
@@ -78,6 +85,28 @@ test('appearance copy preserves run, winners, winnings, weapon and restart withi
   assert.match(longNames, /1 gagnant remporte 9007199254740991 zikak/); assert.ok(validTweet(longNames))
   assert.match(buildAppearanceTweet({ ...input, winners: [], totalRefunded: 7 }), /Aucun gagnant. 7 zikak remboursés/)
   assert.match(buildAppearanceTweet({ ...input, winners: [], totalRefunded: 0 }), /Aucun gagnant sur cette manche/)
+})
+
+test('winner mentions preserve underscores, avoid duplicate @ and include more than two winners when they fit', () => {
+  const input = { observedAt: new Date(START), tool: 'sandale', previousAppearanceAt: START - DAY }
+  const text = buildAppearanceTweet({ ...input, winners: [{ name: ' @pirate_maggma ', amount: 8 }] })
+  assert.match(text, /\n\n@pirate_maggma remporte 8 zikak\.\n\n/)
+  assert.doesNotMatch(text, /@@/)
+  const multiple = buildAppearanceTweet({ ...input, winners: [{ name: 'Alice', amount: 8 }, { name: '@Bob', amount: 4 }, { name: 'Chris_3', amount: 2 }] })
+  assert.match(multiple, /@Alice, @Bob et @Chris_3 se partagent 14 zikak/)
+  assert.ok(validTweet(multiple))
+})
+
+test('display names incompatible with X handles remain plain text without inventing mentions', () => {
+  const input = { observedAt: new Date(START), tool: 'sandale', winners: [{ name: 'Alice Dupont', amount: 8 }] }
+  assert.match(buildAppearanceTweet(input), /Alice Dupont remporte 8 zikak/)
+  assert.doesNotMatch(buildAppearanceTweet(input), /@Alice/)
+  for (const name of ['élodie', 'alice-bob', 'a'.repeat(16), 'https://x.com/evil', 'Alice\n@evil']) {
+    const text = buildAppearanceTweet({ ...input, winners: [{ name, amount: 8 }] })
+    assert.doesNotMatch(text, /@/)
+    assert.ok(validTweet(text))
+  }
+  assert.match(buildAppearanceTweet({ ...input, winners: [{ name: '@', amount: 8 }] }), /1 gagnant remporte 8 zikak/)
 })
 
 test('participant thresholds enqueue once and prediction replays do not change progress', async t => {
@@ -197,9 +226,9 @@ test('settlement counts distinct winners and excludes refunds and replay bonuses
   const settled = await service.settleRound({ roundId, observedAt: new Date(START + 1000), tool: 'sandale' })
   assert.equal(settled.totalRefunded, 2); assert.equal(settled.totalReplayBonus, 2)
   const text = String((await client.execute('SELECT content FROM scolo_tweet_outbox')).rows[0]!.content)
-  assert.match(text, /Alice remporte 5 zikak/)
+  assert.match(text, /@Alice remporte 5 zikak/)
   assert.doesNotMatch(text, /7 zikak|9 zikak|2 gagnants/)
-  assert.match(text, /Run terminé après 12 j 1 s|Run terminé après 12 j/)
+  assert.match(text, /Manche terminée après 12 j/)
 })
 
 test('an uncertain or still queued publication blocks later milestones until reconciled, then waits 24h from sent', async t => {

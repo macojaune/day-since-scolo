@@ -11,6 +11,27 @@ au plus une demande de publication. Le texte existant garde la date de Guadeloup
 le moyen de défense et le lien vers Scolo. Elle ajoute la durée du run, les gagnants et les Zikak effectivement versés, puis annonce la nouvelle manche. Les ajouts historiques ne produisent
 aucune annonce. Les paliers de participation ci-dessous sont déclenchés par de nouveaux paris validés.
 
+Le tweet de rencontre sépare les faits, les gagnants et l’invitation par des
+lignes vides. Exemple avec données fictives :
+
+```text
+Et un nouveau Scolo ce 31/10/2026 à 13:04 🥲
+Manche terminée après 3 j 13 h 54 min.
+Moyen de défense : sandale.
+
+@pirate_maggma remporte 8 zikak.
+
+Nouvelle manche ouverte.
+Viens parier sur mon malheur https://scolo.marvinl.com
+```
+
+Les pseudos Clerk compatibles avec un identifiant X reçoivent un seul `@`.
+Leur correspondance avec un compte X n’est pas vérifiée ; les noms incompatibles
+restent du texte simple. Plusieurs gagnants sont mentionnés avec le total de
+leurs gains. Si le texte dépasse les 280 caractères pondérés de X, une version
+plus courte conserve les mentions si possible, sinon indique le nombre de
+gagnants et le total. Les annonces déjà enregistrées ne sont pas réécrites.
+
 La publication réelle est désactivée par défaut. Local et DEV la refusent même
 avec une clé Buffer. Ils permettent les tests automatisés avec des fixtures et
 la vérification de connexion en lecture seule. PROD reste une activation séparée.
