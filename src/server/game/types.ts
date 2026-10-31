@@ -1,4 +1,5 @@
 export type WalletMode = 'local' | 'scolo'
+export type ApplicationEnvironment = 'local' | 'dev' | 'prod'
 export type PredictionStatus = 'active' | 'won' | 'lost' | 'refunded'
 export type GameErrorCode = 'INVALID_INPUT' | 'INSUFFICIENT_BALANCE' | 'ROUND_CLOSED' | 'IDEMPOTENCY_CONFLICT' | 'PLAYER_NOT_FOUND' | 'CONFIGURATION_ERROR'
 
@@ -70,6 +71,7 @@ export interface SettlementResult {
   appearanceId?: number
 }
 export interface PublicGame {
+  environment?: ApplicationEnvironment
   walletMode: WalletMode
   isSimulated: boolean
   round: {

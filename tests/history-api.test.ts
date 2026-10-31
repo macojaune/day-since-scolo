@@ -28,10 +28,15 @@ const input = { observedAt: new Date('2026-07-26T06:34:00.000Z'), tool: 'coutela
 test('historical appearance API denies visitors, non-admin users and foreign origins', async () => {
   const visitor = appRouter.createCaller({ req: request(), userId: null, isAdmin: false })
   await assert.rejects(visitor.addHistoricalAppearance(input), errorCode('UNAUTHORIZED'))
+  await assert.rejects(visitor.pointSyncStatus(), errorCode('UNAUTHORIZED'))
+  await assert.rejects(visitor.retryPointSync(), errorCode('UNAUTHORIZED'))
   const player = appRouter.createCaller({ req: request(), userId: 'player', isAdmin: false })
   await assert.rejects(player.addHistoricalAppearance(input), errorCode('FORBIDDEN'))
+  await assert.rejects(player.pointSyncStatus(), errorCode('FORBIDDEN'))
+  await assert.rejects(player.retryPointSync(), errorCode('FORBIDDEN'))
   const foreign = appRouter.createCaller({ req: request('https://elsewhere.example'), userId: 'admin', isAdmin: true })
   await assert.rejects(foreign.addHistoricalAppearance(input), errorCode('FORBIDDEN'))
+  await assert.rejects(foreign.retryPointSync(), errorCode('FORBIDDEN'))
 })
 
 test('authorized history API records the server administrator identity and is idempotent', async t => {
@@ -40,6 +45,8 @@ test('authorized history API records the server administrator identity and is id
     await rm(directory, { recursive: true, force: true })
   })
   const admin = appRouter.createCaller({ req: request(), userId: 'admin', isAdmin: true })
+  assert.deepEqual(await admin.pointSyncStatus(), { enabled: false, sent: 0, pending: 0, blocked: 0, awaitingIdentity: 0 })
+  assert.deepEqual(await admin.retryPointSync(), { enabled: false, sent: 0, pending: 0, blocked: 0, awaitingIdentity: 0 })
   const before = await admin.game()
   const appearance = await admin.addHistoricalAppearance(input)
   assert.deepEqual(await admin.addHistoricalAppearance(input), appearance)

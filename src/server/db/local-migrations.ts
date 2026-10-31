@@ -3,8 +3,10 @@ import type { Client } from '@libsql/client'
 import { participationSchema } from '../social/participation-tweets'
 import { bufferPostsSchema, participationBufferPostsSchema } from '../social/buffer-outbox'
 import { tweetOutboxSchema } from '../social/tweet-outbox'
+import { zikakOutboxSchema } from '../zikak/outbox'
+import { pointJobsSchema } from '../zikak/jobs'
 
-export const GAME_SCHEMA_VERSION = '2026-10-30-social-arcade-v5'
+export const GAME_SCHEMA_VERSION = '2026-10-31-zikak-sync-v6'
 
 // Repeatable bootstrap. Historical auth, credits and bets are neither
 // rewritten nor considered spendable Zikak. CHECKs also protect direct SQL use.
@@ -79,6 +81,8 @@ const statements = [
   `CREATE TABLE IF NOT EXISTS scolo_local_meta (
     key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL
   )`,
+  ...zikakOutboxSchema,
+  ...pointJobsSchema,
   ...arcadeSchema,
   ...participationSchema,
   participationBufferPostsSchema,
@@ -94,7 +98,7 @@ export const GAME_SCHEMA_TABLES = Object.freeze(statements.flatMap(statement => 
 export async function migrateGameDatabase(client: Client) {
   await client.execute('PRAGMA foreign_keys = ON')
   // busy_timeout is a local SQLite setting and is rejected by Turso's HTTP API.
-  if (client.protocol === 'file') if (client.protocol === 'file') await client.execute('PRAGMA busy_timeout = 5000')
+  if (client.protocol === 'file') await client.execute('PRAGMA busy_timeout = 5000')
   const transaction = await client.transaction('write')
   try {
     for (const statement of statements) await transaction.execute(statement)
