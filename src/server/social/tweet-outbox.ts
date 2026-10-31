@@ -29,20 +29,27 @@ export function buildAppearanceTweet(input: Omit<TweetAppearance, 'appearanceId'
   const date = new Intl.DateTimeFormat('fr-FR', { timeZone: 'America/Guadeloupe', day: '2-digit', month: '2-digit', year: 'numeric' }).format(input.observedAt)
   const time = new Intl.DateTimeFormat('fr-FR', { timeZone: 'America/Guadeloupe', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(input.observedAt)
   const duration = runDuration(input.previousAppearanceAt ?? null, input.observedAt.getTime())
-  const run = duration ? `Run terminé après ${duration}.` : 'Durée du run inconnue.'
+  const run = duration ? `Manche terminée après ${duration}.` : 'Durée de la manche inconnue.'
   const winners = input.winners
   const total = winners?.reduce((sum, winner) => sum + BigInt(winner.amount), 0n).toString()
   const summary = winners === undefined ? 'Résultat non renseigné.' : winners.length
     ? `${winners.length} gagnant${winners.length > 1 ? 's se partagent' : ' remporte'} ${total} zikak.`
     : input.totalRefunded ? `Aucun gagnant. ${input.totalRefunded} zikak remboursés.` : 'Aucun gagnant sur cette manche.'
-  // Display names are plain text, never unsolicited mentions or user-supplied links.
-  const names = winners?.slice(0, 2).map(winner => winner.name.normalize('NFC').replace(/[^\p{L}\p{N} _-]/gu, '').trim()).filter(Boolean)
-  const named = winners?.length && winners.length <= 2 && names?.length === winners.length && new Set(names).size === winners.length
-    ? `${names.join(' et ')} ${winners.length > 1 ? 'se partagent' : 'remporte'} ${total} zikak.` : summary
-  const header = `Scolo le ${date} à ${time} ! ${run}\nDéfense : ${tool}.`
-  const restart = `Nouveau run, nouvelle manche. Viens parier sur mon malheur ${SCOLO_URL}`
-  return fitTweet(`${header}\n${named}\n\n${restart}`, `${header}\n${summary}\n\n${restart}`,
-    `Scolo le ${date} à ${time}. ${run} Défense : ${tool}.\n${summary}\nOn repart ! ${SCOLO_URL}`)
+  // Clerk usernames are not verified X accounts. Only prefix compatible handles;
+  // never turn spaces, punctuation or a URL into an invented handle.
+  const names = winners?.map(winner => {
+    const name = winner.name.normalize('NFC').trim().replace(/^@/, '')
+    return /^[A-Za-z0-9_]{1,15}$/.test(name) ? `@${name}` : name.replace(/[^\p{L}\p{N} _-]/gu, '').trim()
+  }).filter(Boolean)
+  const joinedNames = names && names.length > 1 ? `${names.slice(0, -1).join(', ')} et ${names.at(-1)}` : names?.[0]
+  const named = winners?.length && names?.length === winners.length && new Set(names.map(name => name.toLowerCase())).size === winners.length
+    ? `${joinedNames} ${winners.length > 1 ? 'se partagent' : 'remporte'} ${total} zikak.` : summary
+  const header = `Et un nouveau Scolo ce ${date} à ${time} 🥲\n${run}\nMoyen de défense : ${tool}.`
+  const compactHeader = `Scolo ce ${date} à ${time} 🥲\n${run}\nDéfense : ${tool}.`
+  const restart = `Nouvelle manche ouverte.\nViens parier sur mon malheur ${SCOLO_URL}`
+  return fitTweet(`${header}\n\n${named}\n\n${restart}`, `${compactHeader}\n\n${named}\n\n${restart}`,
+    `${header}\n\n${summary}\n\n${restart}`, `${compactHeader}\n\n${summary}\n\n${restart}`,
+    `Scolo ce ${date} à ${time}. ${run}\nDéfense : ${tool}.\n\n${summary}\n\nNouvelle manche ouverte.\n${SCOLO_URL}`)
 }
 
 /** Call inside the same transaction as the appearance. Never backfills older history. */
