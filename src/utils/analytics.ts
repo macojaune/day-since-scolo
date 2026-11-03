@@ -1,6 +1,6 @@
 export const ANALYTICS_HOST = 'scolo.marvinl.com'
 export const ANALYTICS_WEBSITE_ID = 'e5e9b232-675e-4172-b463-32c56e9dc567'
-export const ANALYTICS_SCRIPT = 'https://analytics.marvinl.com/script.js'
+export const ANALYTICS_SCRIPT = 'https://analytics.macojaune.com/script.js'
 
 const events = ['bet_date_selected', 'bet_stake_changed', 'game_sign_in_requested',
   'game_joined', 'bet_submitted', 'bet_confirmed', 'bet_rejected', 'bet_failed', 'wallet_empty'] as const

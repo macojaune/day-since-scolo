@@ -111,7 +111,7 @@ export default function PrivacyPage() {
         <section aria-labelledby="privacy-audience">
           <h2 id="privacy-audience">Les visites et les actions de jeu</h2>
           <p>
-            Umami, hébergé sur analytics.marvinl.com, mesure les visites et
+            Umami, hébergé sur analytics.macojaune.com, mesure les visites et
             l’utilisation du jeu : choix d’une date, montant de la mise,
             demande de connexion, inscription au jeu et paris confirmés ou refusés.
             Il permet aussi de compter les situations où le solde est épuisé.
