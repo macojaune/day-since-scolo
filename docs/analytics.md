@@ -1,6 +1,6 @@
 # Mesure d’audience et des paris
 
-Umami : `https://analytics.marvinl.com`, site Scolo
+Umami : `https://analytics.macojaune.com`, site Scolo
 `e5e9b232-675e-4172-b463-32c56e9dc567` (identifiant public existant).
 
 Le script ne se charge que sur `scolo.marvinl.com`. Seules `/` et
