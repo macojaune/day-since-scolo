@@ -1,4 +1,7 @@
+import { SANDALE_LEADERBOARD_PATH } from '../arcade-links'
+
 export const GAME_SHARE_URL = 'https://scolo.marvinl.com'
+export const LEADERBOARD_SHARE_URL = `${GAME_SHARE_URL}${SANDALE_LEADERBOARD_PATH}`
 export type ShareEntry = { rank: number; name: string; elapsedMs: number; crushed: number; isMe: boolean }
 export type ShareBoard = { entries: ShareEntry[]; me: ShareEntry | null }
 
@@ -19,11 +22,11 @@ export function shareMessage(board?: ShareBoard) {
     ? `Je suis top ${board.me.rank} avec ${shareDuration(board.me.elapsedMs)} sur BÈT a milpat 👀 Qui me passe devant ?`
     : 'Le classement de BÈT a milpat 👀 Qui tient le plus longtemps avec la sandale ?'
 }
-export function shareLinks(board?: ShareBoard) {
+export function shareLinks(board?: ShareBoard, url = GAME_SHARE_URL) {
   const text = shareMessage(board)
   return {
-    x: `https://x.com/intent/tweet?${new URLSearchParams({ text, url: GAME_SHARE_URL })}`,
-    whatsapp: `https://wa.me/?${new URLSearchParams({ text: `${text}\n${GAME_SHARE_URL}` })}`,
-    copy: `${text}\n${GAME_SHARE_URL}`,
+    x: `https://x.com/intent/tweet?${new URLSearchParams({ text, url })}`,
+    whatsapp: `https://wa.me/?${new URLSearchParams({ text: `${text}\n${url}` })}`,
+    copy: `${text}\n${url}`,
   }
 }

@@ -69,9 +69,9 @@ export const arcadeRouter = createTRPCRouter({
     viewer(ctx.userId, input.viewerId)
     return (await service()).leaderboard(ctx.userId)
   })),
-  standings: arcadePublic.input(viewerInput.extend({ offset: z.number().int().min(0).max(10000000).optional() })).query(({ ctx, input }) => handle(async () => {
+  standings: arcadePublic.input(viewerInput.extend({ offset: z.number().int().min(0).max(10000000).optional(), view: z.enum(['session', 'records']).default('session') })).query(({ ctx, input }) => handle(async () => {
     viewer(ctx.userId, input.viewerId)
-    return (await service()).standings(ctx.userId, ctx.req.cookies?.scolo_arcade_latest ?? cookie(ctx.req), input.offset)
+    return (await service()).standings(ctx.userId, input.view === 'records' ? undefined : ctx.req.cookies?.scolo_arcade_latest ?? cookie(ctx.req), input.offset ?? (input.view === 'records' ? 0 : undefined))
   })),
   claim: arcadeProtected.input(z.object({ viewerId: z.string().min(1) })).mutation(({ ctx, input }) => handle(async () => {
     viewer(ctx.userId, input.viewerId)
