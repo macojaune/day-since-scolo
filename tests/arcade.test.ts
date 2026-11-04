@@ -201,18 +201,67 @@ test('latest run has its own private rank and paged neighbors without replacing 
     const before = await service.leaderboard('owner')
     const view = await service.standings('owner', session.token)
     assert.equal(view.sessionId, current.id)
-    assert.equal(view.me?.rank, 40)
+    assert.equal(view.me?.rank, 41)
     assert.equal(view.me?.elapsedMs, current.elapsedMs)
-    assert.equal(view.total, 45)
-    assert.equal(view.offset, 30)
+    assert.equal(view.me?.isCurrentRun, true)
+    assert.equal(view.total, 46)
+    assert.equal(view.offset, 31)
     assert.equal(view.entries.filter(entry => entry.isMe).length, 1)
     assert.ok(view.entries.every(entry => !('user_id' in entry) && !('run_id' in entry)))
-    assert.equal((await service.standings('owner', session.token, 0)).entries[0]!.rank, 1)
+    const firstPage = await service.standings('owner', session.token, 0)
+    assert.deepEqual(firstPage.entries[0], { rank: 1, name: 'Owner', elapsedMs: 50000, crushed: 0, isMe: true, isCurrentRun: false })
+    assert.equal(firstPage.entries[1]!.name, before.entries[1]!.name)
+    assert.equal(firstPage.entries[1]!.rank, 2)
     assert.equal((await service.standings('owner', session.token, 20)).entries[0]!.rank, 21)
     assert.equal((await service.standings('other', session.token)).sessionId, null)
     assert.equal((await service.standings(null, session.token)).sessionId, null)
     assert.deepEqual(await service.leaderboard('owner'), before)
     assert.equal(before.me?.rank, 1)
+    const withoutSession = await service.standings('owner')
+    assert.equal(withoutSession.total, 45)
+    assert.equal(withoutSession.me?.rank, 1)
+    assert.equal(withoutSession.me?.isCurrentRun, false)
+  } finally { client.close(); await rm(directory, { recursive: true, force: true }) }
+})
+
+test('personal best and latest result coexist, but the same recorded run appears only once', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'scolo-standings-record-'))
+  const client = createClient({ url: `file:${join(directory, 'test.db')}` })
+  let now = 100000
+  try {
+    const service = await createArcadeService(client, () => now)
+    for (const playUntil of [6000, 0, 12000]) {
+      const session = await service.start('owner', 'record-test')
+      const input = completed(session, playUntil)
+      now += input.elapsedMs + 1000
+      const current = await service.finish(input, 'owner')
+      await service.claim(session.token, 'owner', 'Owner')
+      const board = await service.standings('owner', session.token)
+      assert.equal(board.me?.elapsedMs, current.elapsedMs)
+      assert.equal(board.me?.isCurrentRun, true)
+      assert.equal(board.entries.filter(entry => entry.isCurrentRun).length, 1)
+      if (playUntil === 0) {
+        assert.equal(board.total, 2)
+        assert.equal(board.me?.rank, 2)
+        assert.equal(board.entries.filter(entry => entry.isMe).length, 2)
+        assert.equal(board.entries[0]!.isCurrentRun, false)
+        assert.ok(board.entries[0]!.elapsedMs > current.elapsedMs)
+      } else {
+        assert.equal(board.total, 1)
+        assert.equal(board.me?.rank, 1)
+      }
+      assert.equal((await service.leaderboard('owner')).entries.length, 1)
+      assert.equal((await service.standings('other', session.token)).entries.some(entry => entry.isCurrentRun), false)
+    }
+    const guest = await service.start(null, 'guest-test')
+    const input = completed(guest, 0)
+    now += input.elapsedMs + 1000
+    await service.finish(input, null)
+    const anonymous = await service.standings(null, guest.token)
+    assert.equal(anonymous.total, 2)
+    assert.equal(anonymous.me?.name, 'Toi')
+    assert.equal(anonymous.me?.isCurrentRun, true)
+    assert.equal((await service.leaderboard(null)).entries.length, 1)
   } finally { client.close(); await rm(directory, { recursive: true, force: true }) }
 })
 
