@@ -4,6 +4,9 @@ import Head from 'next/head'
 import Image from 'next/image'
 import SandaleEasterEgg from '~/components/sandale/SandaleEasterEgg'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
+import SandaleLeaderboard from '~/components/sandale/SandaleLeaderboard'
+import { leaderboardGame, SANDALE_LEADERBOARD_PATH } from '~/game/arcade-links'
 import EncounterHistory from '~/components/EncounterHistory'
 import PredictionGame from '~/components/PredictionGame'
 import ZikakLabel from '~/components/ZikakLabel'
@@ -21,6 +24,14 @@ import {
 } from '~/utils/game-format'
 
 export default function GamePage() {
+  const router = useRouter()
+  const recordsOpen = router.isReady && leaderboardGame(router.query.classement) === 'sandale'
+  function closeRecords() {
+    if (!recordsOpen) return
+    const query = { ...router.query }
+    delete query.classement
+    void router.replace({ pathname: router.pathname, query, hash: router.asPath.split('#')[1] }, undefined, { shallow: true, scroll: false })
+  }
   const { isLoaded, isSignedIn, userId } = useAuth()
   const [joinedUser, setJoinedUser] = useState<string | null>(null)
   const [newEnrollment, setNewEnrollment] = useState<{ playerId: string; viewerId: string } | null>(null)
@@ -171,7 +182,7 @@ export default function GamePage() {
             </section>
             <div className="observation-layout">
               <CurrentRun game={game.data} />
-              <LastEncounter game={game.data} />
+              <LastEncounter game={game.data} recordsOpen={recordsOpen} />
             </div>
             <EncounterHistory history={game.data.history} />
             <PredictionGame
@@ -191,9 +202,11 @@ export default function GamePage() {
           </p>
           <p className="footer-details">
             <span>Parie avec des points fictifs. Aucun argent réel.</span>
+            <Link href={SANDALE_LEADERBOARD_PATH} shallow scroll={false} aria-haspopup="dialog">Classement de la sandale</Link>
             <Link href="/confidentialite">Confidentialité</Link>
           </p>
         </footer>
+        <SandaleLeaderboard view="records" open={recordsOpen} onClose={closeRecords} />
       </div>
     </div>
   )
@@ -249,7 +262,7 @@ function CurrentRun({ game }: { game: PublicGame }) {
   )
 }
 
-function LastEncounter({ game }: { game: PublicGame }) {
+function LastEncounter({ game, recordsOpen }: { game: PublicGame; recordsOpen: boolean }) {
   const encounter = game.lastAppearance
   const weapons: Record<string, string> = {
     sandale: 'Sandale',
@@ -278,7 +291,7 @@ function LastEncounter({ game }: { game: PublicGame }) {
         )}
       </div>
       {encounter && Object.hasOwn(weapons, encounter.tool) && (
-        encounter.tool === 'sandale' ? <SandaleEasterEgg /> : <Image
+        encounter.tool === 'sandale' ? <SandaleEasterEgg recordsOpen={recordsOpen} /> : <Image
           src={`/${encounter.tool}.png`}
           width={200}
           height={200}
