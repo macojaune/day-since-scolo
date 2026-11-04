@@ -78,8 +78,9 @@ export default function SandaleLeaderboard({ open, onClose, onReplay, scores, vi
     clerk.openSignIn({ forceRedirectUrl: '/#run', signUpForceRedirectUrl: '/#run' })
   }
 
+  // A delayed native close event must not rewrite the URL after Forward reopens the records view.
   return <dialog ref={dialog} className={styles.dialog} aria-labelledby={titleId}
-    onCancel={event => { event.preventDefault(); onClose() }} onClose={onClose}
+    onCancel={event => { event.preventDefault(); onClose() }} onClose={records ? undefined : onClose}
     onClick={event => {
       const rect = event.currentTarget.getBoundingClientRect()
       if (event.target === event.currentTarget && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) onClose()
