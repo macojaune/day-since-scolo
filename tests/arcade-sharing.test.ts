@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { GAME_SHARE_URL, shareDuration, shareLinks, shareMessage } from '../src/game/sandale/sharing'
+import { GAME_SHARE_URL, LEADERBOARD_SHARE_URL, shareDuration, shareLinks, shareMessage } from '../src/game/sandale/sharing'
 import { renderArcadeStory } from '../src/server/arcade/story-image'
 
 const board = { entries: [
@@ -27,6 +27,13 @@ test('prepared social messages use the real rank and production URL, without inv
 
 test('shared durations name their units for short games, minutes and hours', () => {
   for (const [ms, expected] of [[10500, '10,5 secondes'], [72000, '1 minute et 12 secondes'], [60000, '1 minute'], [1000, '1 seconde'], [0, '0 seconde'], [3723400, '1 heure, 2 minutes et 3,4 secondes']] as const) assert.equal(shareDuration(ms), expected)
+})
+
+test('sharing the records opens the sandale leaderboard directly', () => {
+  const links = shareLinks(board, LEADERBOARD_SHARE_URL)
+  assert.equal(new URL(new URL(links.x).searchParams.get('url')!).searchParams.get('classement'), '1')
+  assert.ok(new URL(links.whatsapp).searchParams.get('text')!.endsWith(LEADERBOARD_SHARE_URL))
+  assert.ok(links.copy.endsWith('https://scolo.marvinl.com/?classement=1'))
 })
 
 test('story export is a valid 1080 by 1920 PNG with and without a personal result', async () => {

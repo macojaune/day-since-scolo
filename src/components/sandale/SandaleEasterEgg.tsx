@@ -11,7 +11,7 @@ const SandaleGame = dynamic(() => import('./SandaleGame'), {
   loading: () => <span className={styles.loading} role="status">La sandale arrive…</span>,
 })
 
-export default function SandaleEasterEgg() {
+export default function SandaleEasterEgg({ recordsOpen = false }: { recordsOpen?: boolean }) {
   const [open, setOpen] = useState(false)
   const [rankingOpen, setRankingOpen] = useState(false)
   const [gameKey, setGameKey] = useState(0)
@@ -23,16 +23,16 @@ export default function SandaleEasterEgg() {
     const pending = scores.pending.data
     if (!playedHere.current && pending && !scores.busy && !recovered.current.has(pending.id) && (!pending.claimed || !hasSeenScore(pending.id))) {
       recovered.current.add(pending.id)
-      setRankingOpen(true)
+      if (!recordsOpen) setRankingOpen(true)
     }
-  }, [scores.pending.data, scores.busy])
+  }, [scores.pending.data, scores.busy, recordsOpen])
   useEffect(() => { if (rankingOpen && scores.pending.data?.claimed) markScoreSeen(scores.pending.data.id) }, [rankingOpen, scores.pending.data])
   useEffect(() => {
     if (!scores.isSignedIn) return
     let returning = false
     try { returning = localStorage.getItem(AUTH_RETURN_KEY) === 'true'; if (returning) localStorage.removeItem(AUTH_RETURN_KEY) } catch { /* Receipt recovery does not depend on this UI preference. */ }
-    if (returning) setRankingOpen(true)
-  }, [scores.isSignedIn])
+    if (returning && !recordsOpen) setRankingOpen(true)
+  }, [scores.isSignedIn, recordsOpen])
   return <div className={styles.slot} data-testid="sandale-slot">
     {open ? <SandaleGame key={gameKey} onLeaderboard={() => setRankingOpen(true)} onClose={() => {
       setOpen(false)
@@ -41,6 +41,6 @@ export default function SandaleEasterEgg() {
       aria-label="Jouer à la sandale" title="Jouer à la sandale" onClick={() => { playedHere.current = true; setOpen(true) }}>
       <Image src="/sandale.png" width={200} height={200} alt="Sandale" unoptimized />
     </button>}
-    <SandaleLeaderboard open={rankingOpen} onClose={() => setRankingOpen(false)} scores={scores} onReplay={() => { setRankingOpen(false); setGameKey(value => value + 1); setOpen(true) }} />
+    <SandaleLeaderboard open={rankingOpen && !recordsOpen} onClose={() => setRankingOpen(false)} scores={scores} onReplay={() => { setRankingOpen(false); setGameKey(value => value + 1); setOpen(true) }} />
   </div>
 }
