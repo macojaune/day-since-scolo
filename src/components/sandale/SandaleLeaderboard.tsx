@@ -86,7 +86,7 @@ export default function SandaleLeaderboard({ open, onClose, onReplay, scores }: 
       </button>
     </header>
     {current && <section className={styles.result} aria-label="Résultat de cette partie">
-      <div className={styles.position}><span>Ta place</span><div className={styles.placeValue}><strong>{ranking.data?.me ? `#${ranking.data.me.rank}` : '…'}</strong>
+      <div className={styles.position}><span>{ranking.data?.sessionId ? 'Cette partie' : 'Ta place'}</span><div className={styles.placeValue}><strong>{ranking.data?.me ? `#${ranking.data.me.rank}` : '…'}</strong>
         {visibleBonus && <span key={visibleBonus.key} className={styles.bonus} role="status">+{visibleBonus.amount} Zikak</span>}
       </div></div>
       <div className={styles.time}><span>Ton temps</span><strong>{formatDuration(current.elapsedMs)}</strong></div>
@@ -107,10 +107,10 @@ export default function SandaleLeaderboard({ open, onClose, onReplay, scores }: 
       <div ref={list} className={styles.scrollArea} role="region" aria-label="Joueurs du classement" tabIndex={0}>
         {ranking.data.previousOffset !== null && <button type="button" className={styles.more} onClick={() => setOffset(ranking.data!.previousOffset!)}>Voir les places précédentes</button>}
         <table className={styles.table}>
-          <caption className={styles.srOnly}>Classement de cette partie, {ranking.data.total} joueurs</caption>
+          <caption className={styles.srOnly}>Classement, {ranking.data.total} résultats</caption>
           <thead><tr><th scope="col">Place</th><th scope="col">Joueur</th><th scope="col">Temps</th></tr></thead>
-          <tbody>{ranking.data.entries.map(entry => <tr key={entry.rank} ref={entry.isMe ? ownRow : undefined} className={entry.isMe ? styles.me : undefined} aria-current={entry.isMe ? 'true' : undefined}>
-            <td>{entry.rank}</td><th scope="row"><span>{entry.name}</span>{entry.isMe && <small className={styles.you}>toi</small>}</th><td>{formatDuration(entry.elapsedMs)}</td>
+          <tbody>{ranking.data.entries.map(entry => <tr key={entry.rank} ref={(entry.isCurrentRun || (!ranking.data.sessionId && entry.isMe)) ? ownRow : undefined} className={entry.isMe ? styles.me : undefined} aria-current={(entry.isCurrentRun || (!ranking.data.sessionId && entry.isMe)) ? 'true' : undefined}>
+            <td>{entry.rank}</td><th scope="row"><span>{entry.name}</span>{entry.isMe && <small className={styles.you}>{entry.isCurrentRun ? 'cette partie' : 'ton record'}</small>}</th><td>{formatDuration(entry.elapsedMs)}</td>
           </tr>)}</tbody>
         </table>
         {ranking.data.nextOffset !== null && <button type="button" className={styles.more} onClick={() => setOffset(ranking.data!.nextOffset!)}>Voir les places suivantes</button>}
