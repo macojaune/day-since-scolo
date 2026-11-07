@@ -842,9 +842,60 @@ select {
   font-size: 0.8rem;
 }
 .last-result {
-  color: #fcd34d;
-  font-size: 0.8rem;
-  margin-top: 20px !important;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px 36px;
+  margin-top: 28px;
+  padding-block: 20px;
+  border-top: 1px solid #38342a;
+}
+.scolo-app .last-result h3 {
+  margin: 0;
+  color: #bcbcbc;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+.last-result dl {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 32px;
+  margin: 0;
+}
+.last-result dl > div {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 3px;
+}
+.last-result dt {
+  color: #bcbcbc;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+.last-result dd {
+  margin: 0;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+}
+.last-result dd span {
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.last-result .last-result-payout dd { color: #facc15; }
+.last-result .last-result-payout dd span { display: none; }
+.last-result .last-result-distance dd { font-size: 1.1rem; }
+@media (max-width: 540px) {
+  .last-result { align-items: flex-start; gap: 14px; }
+  .scolo-app .last-result h3 { flex-basis: 100%; }
+  .last-result dl { gap: 16px 28px; }
 }
 .game-rules {
   border-top: 1px solid #38342a;
