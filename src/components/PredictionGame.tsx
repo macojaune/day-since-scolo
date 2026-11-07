@@ -45,6 +45,8 @@ export default function PredictionGame({
   isSignedIn,
   ready,
 }: Props) {
+  const result = game.recentResult
+  const winningDays = result?.winningDistanceMs == null ? null : Math.round(result.winningDistanceMs / DAY)
   const [windowStart, setWindowStart] = useState('')
   const [day, setDay] = useState('')
   const [stake, setStake] = useState('1')
@@ -658,19 +660,24 @@ export default function PredictionGame({
             Chargement de tes paris…
           </p>
         ))}
-      {game.recentResult && (
-        <p className="last-result">
-          Dernière manche : {formatPoints(game.recentResult.pot)} Zikak
-          distribués
-          {game.recentResult.winningDistanceMs === null
-            ? ' · aucun pari admissible'
-            : game.recentResult.winningDistanceMs === 0
-              ? ' · date exacte trouvée'
-              : ` · meilleur écart : ${Math.round(game.recentResult.winningDistanceMs / DAY)} jours`}
-          {game.recentResult.totalReplayBonus > 0 &&
-            ` · ${formatPoints(game.recentResult.totalReplayBonus)} Zikak ajoutés aux joueurs perdants sans solde pour rejouer`}
-          .
-        </p>
+      {result && (
+        <section className="last-result" aria-label="Dernière manche">
+          <h3>Dernière manche</h3>
+          <dl>
+            <div className="last-result-payout">
+              <dt>Zikak distribués</dt>
+              <dd>{formatPoints(result.pot)} <span>Zikak</span></dd>
+            </div>
+            <div className="last-result-distance">
+              <dt>{winningDays === null ? 'Résultat' : 'Meilleur écart'}</dt>
+              <dd>{winningDays === null
+                ? 'Aucun pari admissible'
+                : winningDays === 0
+                  ? 'Date exacte'
+                  : <>{winningDays} <span>{winningDays === 1 ? 'jour' : 'jours'}</span></>}</dd>
+            </div>
+          </dl>
+        </section>
       )}
       <details className="game-rules" id="regles">
         <summary>Comment on gagne ?</summary>
