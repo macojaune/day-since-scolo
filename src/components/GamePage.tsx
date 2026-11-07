@@ -1,3 +1,4 @@
+import WeaponEasterEgg from '~/components/weapons/WeaponEasterEgg'
 import { useAuth, SignInButton, UserButton } from '@clerk/nextjs'
 import { useEffect, useRef, useState } from 'react'
 import Head from 'next/head'
@@ -25,7 +26,8 @@ import {
 
 export default function GamePage() {
   const router = useRouter()
-  const recordsOpen = router.isReady && leaderboardGame(router.query.classement) === 'sandale'
+  const recordsGame = router.isReady ? leaderboardGame(router.query.classement) : null
+  const recordsOpen = recordsGame !== null
   function closeRecords() {
     if (!recordsOpen) return
     const query = { ...router.query }
@@ -203,10 +205,12 @@ export default function GamePage() {
           <p className="footer-details">
             <span>Parie avec des points fictifs. Aucun argent réel.</span>
             <Link href={SANDALE_LEADERBOARD_PATH} shallow scroll={false} aria-haspopup="dialog">Classement de la sandale</Link>
+            <Link href="/?classement=2" shallow scroll={false} aria-haspopup="dialog">Classement Digrain</Link>
+            <Link href="/?classement=3" shallow scroll={false} aria-haspopup="dialog">Classement du coutelas</Link>
             <Link href="/confidentialite">Confidentialité</Link>
           </p>
         </footer>
-        <SandaleLeaderboard view="records" open={recordsOpen} onClose={closeRecords} />
+        <SandaleLeaderboard key={recordsGame ?? 'sandale'} game={recordsGame ?? 'sandale'} view="records" open={recordsOpen} onClose={closeRecords} />
       </div>
     </div>
   )
@@ -291,7 +295,7 @@ function LastEncounter({ game, recordsOpen }: { game: PublicGame; recordsOpen: b
         )}
       </div>
       {encounter && Object.hasOwn(weapons, encounter.tool) && (
-        encounter.tool === 'sandale' ? <SandaleEasterEgg recordsOpen={recordsOpen} /> : <Image
+        encounter.tool === 'sandale' ? <SandaleEasterEgg recordsOpen={recordsOpen} /> : encounter.tool === 'digrain' || encounter.tool === 'coutelas' ? <WeaponEasterEgg key={encounter.tool} game={encounter.tool} recordsOpen={recordsOpen} /> : <Image
           src={`/${encounter.tool}.png`}
           width={200}
           height={200}

@@ -1,3 +1,4 @@
+import type { ArcadeGame } from '~/game/weapons/catalog'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { acknowledgeScore, markScoreDurable, pendingScores, SCORE_QUEUE_EVENT } from '~/game/sandale/pending-scores'
@@ -9,11 +10,11 @@ function recoveryError(cause: unknown) {
   return 'La sauvegarde n’a pas abouti. Ta partie reste en attente ; réessaie.'
 }
 
-export function useScoreRecovery() {
+export function useScoreRecovery(game: ArcadeGame = 'sandale') {
   const { isLoaded, isSignedIn, userId } = useAuth()
   const viewerId = userId ?? null
   const utils = api.useUtils()
-  const pending = api.arcade.pending.useQuery({ viewerId }, { enabled: isLoaded })
+  const pending = api.arcade.pending.useQuery({ viewerId, game }, { enabled: isLoaded })
   const { mutateAsync: finish } = api.arcade.finish.useMutation()
   const { mutateAsync: restore } = api.arcade.restore.useMutation()
   const { mutateAsync: claim } = api.arcade.claim.useMutation()
@@ -35,18 +36,18 @@ export function useScoreRecovery() {
       const attempted = new Set<string>()
       // New completed games can join while a previous receipt is being written.
       for (;;) {
-        const item = pendingScores().find(score => !attempted.has(score.token))
+        const item = pendingScores(game).find(score => !attempted.has(score.token))
         if (!item) break
         attempted.add(item.token)
-        const result = item.submission ? await finish(item.submission) : await restore({ token: item.token })
-        if (result?.claimed && viewerId) { acknowledgeScore(result.id); setSaved({ ...result, viewerId }) }
-        else if (result) markScoreDurable(item.token, result.id)
-        else if (item.id) acknowledgeScore(item.id)
+        const result = item.submission ? await finish({ ...item.submission, game }) : await restore({ token: item.token, game })
+        if (result?.claimed && viewerId) { acknowledgeScore(result.id, game); setSaved({ ...result, viewerId }) }
+        else if (result) markScoreDurable(item.token, result.id, game)
+        else if (item.id) acknowledgeScore(item.id, game)
       }
       await Promise.all([utils.arcade.pending.invalidate(), utils.arcade.standings.invalidate()])
     } catch (cause) { setError(recoveryError(cause)) }
     finally { draining.current = false; setBusy(false) }
-  }, [finish, restore, utils, viewerId])
+  }, [finish, restore, utils, viewerId, game])
 
   useEffect(() => {
     if (loadedFor.current !== viewerId) { loadedFor.current = viewerId; void drain() }
@@ -64,14 +65,14 @@ export function useScoreRecovery() {
     setClaiming(true)
     setError(null)
     try {
-      const result = await claim({ viewerId: userId })
+      const result = await claim({ viewerId: userId, game })
       if (result.reward.credited > 0) setBonus({ key: `${userId}:${result.reward.total}`, amount: result.reward.credited, total: result.reward.total, viewerId: userId })
-      acknowledgeScore(result.id)
+      acknowledgeScore(result.id, game)
       setSaved({ ...result, viewerId: userId })
       await Promise.all([utils.arcade.pending.invalidate(), utils.arcade.leaderboard.invalidate(), utils.arcade.standings.invalidate(), utils.app.me.invalidate()])
     } catch (cause) { setError(recoveryError(cause)) }
     finally { setClaiming(false) }
-  }, [claim, pending.data, userId, utils])
+  }, [claim, pending.data, userId, utils, game])
 
   useEffect(() => {
     if (!isSignedIn || !userId || !pending.data || pending.data.claimed || pending.data.otherAccount || busy) return

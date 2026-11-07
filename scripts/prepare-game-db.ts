@@ -9,7 +9,7 @@ import { ensurePlayerInTransaction } from '../src/server/game/player'
 
 type Connection = Pick<Client, 'execute'>
 interface PreparationOptions { apply?: boolean; adminClerkId?: string; adminName?: string }
-interface TableSnapshot { count: number; hash: string; rows: string[] }
+interface TableSnapshot { columns: string[]; count: number; hash: string; rows: string[] }
 type Snapshot = Record<string, TableSnapshot>
 
 function quote(name: string) { return `"${name.replaceAll('"', '""')}"` }
@@ -20,14 +20,14 @@ function encode(value: unknown): unknown {
   return value
 }
 
-async function snapshot(connection: Connection): Promise<Snapshot> {
+async function snapshot(connection: Connection, projection?: Snapshot): Promise<Snapshot> {
   const names = (await connection.execute("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")).rows
   const tables: Snapshot = {}
   for (const row of names) {
     const name = String(row.name)
-    const result = await connection.execute(`SELECT * FROM ${quote(name)}`)
+    const result = await connection.execute(`SELECT ${projection?.[name]?.columns.map(quote).join(',') ?? '*'} FROM ${quote(name)}`)
     const rows = result.rows.map(values => JSON.stringify(result.columns.map((_, index) => encode(values[index])))).sort()
-    tables[name] = { count: rows.length, hash: createHash('sha256').update(JSON.stringify({ columns: result.columns, rows })).digest('hex'), rows }
+    tables[name] = { columns: result.columns, count: rows.length, hash: createHash('sha256').update(JSON.stringify({ columns: result.columns, rows })).digest('hex'), rows }
   }
   return tables
 }
@@ -106,10 +106,10 @@ export async function prepareGameDatabase(client: Client, options: PreparationOp
   let administrator: typeof existingAdmin
   try {
     // Detect changes between the dry-run snapshot and this write transaction.
-    assertPreserved(before, await snapshot(transaction))
+    assertPreserved(before, await snapshot(transaction, before))
     let player: Row | null = null
     if (options.adminClerkId) player = await ensurePlayerInTransaction(transaction, { userId: options.adminClerkId, displayName: options.adminName }, { now: Date.now() })
-    after = await snapshot(transaction)
+    after = await snapshot(transaction, before)
     assertPreserved(before, after)
     administrator = await adminState(transaction, options, after)
     if (player && !administrator) throw new Error('Le joueur préparé est introuvable.')
