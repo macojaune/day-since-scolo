@@ -1,0 +1,36 @@
+.slot { width:200px; height:224px; flex:none; display:grid; place-items:center; }
+.trigger { width:100%; height:100%; display:grid; place-items:center; padding:0; border:0; background:none; border-radius:6px; }
+.trigger img { width:100%; height:185px; object-fit:contain; transition:transform 180ms ease-out; }
+.trigger:hover img { transform:rotate(-6deg); }
+.trigger:focus-visible { outline:3px solid #facc15; outline-offset:2px; }
+.dialog { width:min(420px,calc(100vw - 24px)); max-height:calc(100dvh - 24px); margin:auto; padding:0; background:#141414; color:#fff; border:1px solid #38342a; border-radius:12px; overflow-y:auto; scrollbar-color:#facc15 #141414; }
+.dialog::backdrop { background:#000c; }
+.game { --yellow:#facc15; padding:16px; font-family:Geist,sans-serif; }
+.game ::selection { color:#000; background:var(--yellow); }
+.game button { min-height:44px; padding:8px 12px; border:0; border-radius:6px; color:#000; background:var(--yellow); font-weight:650; font-size:13px; }
+.game button:hover:not(:disabled) { background:#ffe16a; }
+.game button:disabled { opacity:.45; cursor:default; }
+.game :focus-visible { outline:2px solid #fff; outline-offset:3px; }
+.game header { display:flex; align-items:start; gap:12px; }
+.game header>div { flex:1; }
+.game header>button { width:44px; flex:none; color:#fff; background:transparent; font-size:26px; }
+.game h3 { margin:0; font-size:22px; line-height:1.15; letter-spacing:-.025em; font-weight:750; }
+.game header p { margin:6px 0 12px; color:#bcbcbc; font-size:13px; line-height:1.4; }
+.hud { display:flex; gap:10px; align-items:center; min-height:44px; font-size:12px; font-variant-numeric:tabular-nums; }
+.hud strong { color:var(--yellow); font-size:17px; margin-right:auto; }
+.game .hud button { background:transparent; color:#fff; padding:6px; }
+.arena { position:relative; width:100%; max-width:320px; margin:0 auto; }
+.arena>svg { display:block; width:100%; height:auto; touch-action:none; user-select:none; -webkit-user-select:none; border-radius:6px; }
+.curtain { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:20px; text-align:center; background:#141414ed; border-radius:6px; }
+.curtain h4 { font-size:24px; line-height:1.1; font-weight:750; margin:0; letter-spacing:-.025em; }
+.curtain p { color:#bcbcbc; font-size:14px; line-height:1.5; margin:0; }
+.controls { display:flex; flex-wrap:wrap; align-items:end; gap:12px; padding-top:14px; }
+.controls label { display:flex; flex:1; min-width:110px; flex-direction:column; gap:4px; color:#fff; font-size:12px; font-variant-numeric:tabular-nums; }
+.controls input { width:100%; min-height:44px; accent-color:var(--yellow); cursor:pointer; }
+.controls meter { width:100%; height:16px; accent-color:var(--yellow); }
+.controls button { flex:1; }
+.game .instructions { margin:12px 0 0; font-size:12px; line-height:1.5; color:#bcbcbc; }
+.srOnly { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
+@media(max-width:1100px) { .slot { width:180px; } }
+@media(max-width:380px) { .slot { width:164px; } .game { padding:12px; } .game h3 { font-size:20px; } }
+@media(prefers-reduced-motion:reduce) { .trigger img { transition:none; } }

@@ -1,3 +1,4 @@
+import { gameInput } from '~/game/weapons/catalog'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { applicationEnvironment } from '~/config.js'
 import { env } from '~/env'
@@ -13,13 +14,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     assertLocalRequest(req)
     const { userId } = getAuth(req)
-    const service = await getArcadeService()
+    const game = gameInput.parse(req.query.game ?? 'sandale')
+    const service = await getArcadeService(game)
+    const suffix = game === 'sandale' ? '' : `_${game}`
     const records = req.query.view === 'records'
-    const [board, current] = await Promise.all([service.standings(userId, records ? undefined : req.cookies.scolo_arcade_latest ?? req.cookies.scolo_arcade_pending, 0), records ? null : service.pending(req.cookies.scolo_arcade_pending, userId)])
+    const [board, current] = await Promise.all([service.standings(userId, records ? undefined : req.cookies[`scolo_arcade_latest${suffix}`] ?? req.cookies[`scolo_arcade_pending${suffix}`], 0), records ? null : service.pending(req.cookies[`scolo_arcade_pending${suffix}`], userId)])
     res.setHeader('Content-Type', 'image/png')
     res.setHeader('Content-Disposition', 'attachment; filename="bet-a-milpat-classement-story.png"')
     if (req.method === 'HEAD') return res.status(200).end()
-    const bytes = await renderArcadeStory(board, current && !current.otherAccount ? current : undefined, applicationEnvironment(env) !== 'prod')
+    const bytes = await renderArcadeStory(board, current && !current.otherAccount ? current : undefined, applicationEnvironment(env) !== 'prod', game)
     return res.status(200).send(bytes)
   } catch { return res.status(503).json({ error: 'L’image est indisponible. Réessaie dans un instant.' }) }
 }

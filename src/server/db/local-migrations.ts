@@ -6,7 +6,7 @@ import { tweetOutboxSchema } from '../social/tweet-outbox'
 import { zikakOutboxSchema } from '../zikak/outbox'
 import { pointJobsSchema } from '../zikak/jobs'
 
-export const GAME_SCHEMA_VERSION = '2026-10-31-zikak-sync-v6'
+export const GAME_SCHEMA_VERSION = '2026-11-07-arcade-weapons-v7'
 
 // Repeatable bootstrap. Historical auth, credits and bets are neither
 // rewritten nor considered spendable Zikak. CHECKs also protect direct SQL use.
@@ -95,13 +95,25 @@ export const GAME_SCHEMA_TABLES = Object.freeze(statements.flatMap(statement => 
 }))
 
 /** Explicit additive migration. Public runtime never calls this function. */
+const migrationsInFlight = new WeakMap<Client, Promise<void>>()
 export async function migrateGameDatabase(client: Client) {
+  const active = migrationsInFlight.get(client)
+  if (active) return active
+  const migration = applyGameMigration(client)
+  migrationsInFlight.set(client, migration)
+  try { await migration } finally { migrationsInFlight.delete(client) }
+}
+async function applyGameMigration(client: Client) {
   await client.execute('PRAGMA foreign_keys = ON')
   // busy_timeout is a local SQLite setting and is rejected by Turso's HTTP API.
   if (client.protocol === 'file') await client.execute('PRAGMA busy_timeout = 5000')
   const transaction = await client.transaction('write')
   try {
     for (const statement of statements) await transaction.execute(statement)
+    for (const table of ['scolo_arcade_runs', 'scolo_arcade_bests']) {
+      const columns = (await transaction.execute(`PRAGMA table_info(${table})`)).rows
+      if (!columns.some(column => column.name === 'points')) await transaction.execute(`ALTER TABLE ${table} ADD COLUMN points INTEGER NOT NULL DEFAULT 0`)
+    }
     const definition = (await transaction.execute("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'scolo_wallet_entries'")).rows[0]!
     if (!String(definition.sql).includes("'arcade_bonus'")) {
       // SQLite cannot ALTER a CHECK. Preserve every entry and any explicit

@@ -209,7 +209,7 @@ test('latest run has its own private rank and paged neighbors without replacing 
     assert.equal(view.entries.filter(entry => entry.isMe).length, 1)
     assert.ok(view.entries.every(entry => !('user_id' in entry) && !('run_id' in entry)))
     const firstPage = await service.standings('owner', session.token, 0)
-    assert.deepEqual(firstPage.entries[0], { rank: 1, name: 'Owner', elapsedMs: 50000, crushed: 0, isMe: true, isCurrentRun: false })
+    assert.deepEqual(firstPage.entries[0], { rank: 1, name: 'Owner', elapsedMs: 50000, crushed: 0, points: 0, isMe: true, isCurrentRun: false })
     assert.equal(firstPage.entries[1]!.name, before.entries[1]!.name)
     assert.equal(firstPage.entries[1]!.rank, 2)
     assert.equal((await service.standings('owner', session.token, 20)).entries[0]!.rank, 21)
