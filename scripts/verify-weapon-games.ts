@@ -14,6 +14,7 @@ try {
   const errors: string[] = []; page.on('pageerror',error=>errors.push(error.message))
   await page.addInitScript(() => localStorage.setItem('umami.disabled','1'))
   await page.route('**/api/trpc/**', async route => {
+    try {
     const path = new URL(route.request().url()).pathname
     const response = await route.fetch()
     if (path.endsWith('/arcade.start') && response.ok()) {
@@ -34,6 +35,7 @@ try {
       return route.fulfill({response,json:body})
     }
     await route.fulfill({response})
+    } catch { if (!page.isClosed()) await route.abort().catch(() => undefined) }
   })
   await page.goto(target.href, { waitUntil:'networkidle' })
   const trigger = page.getByRole('button',{name:game==='digrain'?'Jouer avec Digrain':'Jouer avec le coutelas',exact:true})
